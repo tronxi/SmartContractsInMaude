@@ -1,0 +1,47 @@
+fmod UPLC is
+    pr INT .
+    pr QID .
+
+    sorts Var BuiltName Version Constant Program Term Atn Op Tn TnList .
+    
+    subsort Qid < Var .
+    subsort Var < Term .
+    subsort Atn < Tn .
+    subsort Tn < TnList .
+
+    ops integer bytestring string bool unit data : -> Atn [ctor] .
+    ops list pair : -> Op [ctor] .
+
+    ops addInteger subtractInteger multiplyInteger 
+    divideInteger modInteger quotientInteger 
+    remainderInteger equalsInteger 
+    lessThanInteger lessThanEqualsInteger 
+    appendByteString consByteString sliceByteString 
+    lengthOfByteString indexByteString equalsByteString 
+    lessThanByteString lessThanEqualsByteString appendString
+    equalsString encodeUtf8 decodeUtf8 sha2-256 sha3-256 
+    blake2b-256 verifySignature ifThenElse chooseUnit 
+    trace fstPair sndPair chooseList mkCons headList 
+    tailList nullList chooseData constrData mapData 
+    listData iData bData unConstrData unMapData unListData
+    unIData unBData equalsData mkPairData mkNilData mkNilPairData : -> BuiltName [ctor] .
+
+    op ((_._._)) : Int Int Int -> Version [ctor] .
+
+    op _,_ : TnList TnList -> TnList [ctor assoc] .
+
+    op _(_) : Op TnList -> Tn [ctor] .
+
+    op ((con__)) : Tn Constant -> Term [ctor] .
+    op ((builtin_)) : BuiltName -> Term [ctor] .
+    op ((lam__)) : Var Term -> Term [ctor] .
+    op [__] : Term Term -> Term [ctor] .
+    op ((delay_)) : Term -> Term [ctor] .
+    op ((force_)) : Term -> Term [ctor] .
+    op ((error)) : -> Term [ctor] .
+    op ((program__)) : Version Term -> Program [ctor] .
+
+    op program : -> Program .
+    --- eq program = (program (16 . 0 . 0) (builtin name1)) .
+
+endfm

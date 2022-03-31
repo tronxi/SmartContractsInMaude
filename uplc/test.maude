@@ -1,0 +1,13 @@
+load process-module.maude
+load uplc-executor.maude
+load uplc.maude
+mod TEST is
+    pr UPLC-EXECUTOR .
+endm
+set print attribute on .
+
+red generateMetaProgram("(program 1.0.0 (con integer 17))") .
+red processMetaProgram(generateMetaProgram("(program 1.0.0 (builtin sha2_256))")) .
+--- red module(generateMetaProgram("(program 1.0.0 [[[[[(force (builtin ifThenElse))[ [ (builtin lessThanInteger) (con integer 3) ] (con integer 4) ]](builtin addInteger)](builtin subtractInteger)](con integer 0)](con integer 2)])")) .
+--- red uplc .
+q

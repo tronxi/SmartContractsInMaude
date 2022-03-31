@@ -1,0 +1,44 @@
+fmod LEXICAL-GRAMMAR is
+    pr INT .
+
+    sorts @Token@ @Name@ @Var@ @BuiltName@ @Version@ @Constant@ .
+    subsort @Token@ < @Name@ .
+    subsort @Name@ < @Var@ .
+    subsort @Name@ < @BuiltName@ .
+    subsort @Name@ < @Constant@ .
+    subsort @Name@ < @Version@ .
+endfm
+
+fmod GRAMMAR is
+    pr LEXICAL-GRAMMAR .
+
+    sorts @Program@ @Term@ @Atn@ @Op@ @Tn@ @TnList@ .
+    subsort @Var@ < @Term@ .
+    subsort @Name@ < @Atn@ .
+    subsort @Name@ < @Op@ .
+    subsort @Atn@ < @Tn@ .
+    subsort @Tn@ < @TnList@ .
+
+    op _,_ : @TnList@ @TnList@ -> @TnList@ [ctor assoc] .
+
+    op _(_) : @Op@ @TnList@ -> @Tn@ [ctor] .
+
+    op ((con__)) : @Tn@ @Constant@ -> @Term@ [ctor] .
+    op ((builtin_)) : @BuiltName@ -> @Term@ [ctor] .
+    op ((lam__)) : @Var@ @Term@ -> @Term@ [ctor] .
+    op [__] : @Term@ @Term@ -> @Term@ [ctor] .
+    op ((delay_)) : @Term@ -> @Term@ [ctor] .
+    op ((force_)) : @Term@ -> @Term@ [ctor] .
+    op ((error)) : -> @Term@ [ctor] .
+    op ((program__)) : @Version@ @Term@ -> @Program@ [ctor] .
+endfm
+
+fmod BUBBLE is 
+    inc QID-LIST .
+    pr GRAMMAR .
+
+    op token : Qid -> @Token@
+    [special (id-hook Bubble   (1 1)
+           op-hook qidSymbol (<Qids> : ~> Qid))] .
+
+endfm

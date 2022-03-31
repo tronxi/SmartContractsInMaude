@@ -1,0 +1,26 @@
+load grammar.maude
+fmod UPLC-EXECUTOR is
+    pr PROCESS-MODULE .
+    pr GRAMMAR .
+    pr LEXICAL .
+    pr STRING .
+
+    var S : String .
+    var T : Term .
+
+    op bubble : -> FModule .
+    eq bubble = upModule('BUBBLE, false) .
+
+    op uplc : -> FModule .
+    eq uplc = upModule('UPLC, false) .
+
+    op processMetaProgram : Term -> Term .
+    eq processMetaProgram(T) = getTerm(metaReduce(processModule(uplc, T), 'program.Program)) .
+
+    op module : Term -> FModule .
+    eq module(T) = processModule(uplc, T) .
+
+    op generateMetaProgram : String -> Term .
+    eq generateMetaProgram(S) = getTerm(metaParse(bubble, tokenize(S), '@Program@)) .
+
+endfm

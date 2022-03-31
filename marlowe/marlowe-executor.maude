@@ -28,7 +28,7 @@ mod MARLOWE-EXECUTOR is
     op configuration : String String -> Term .
     ceq configuration(S, S') = '__['<>.Portal,'<_:_|_>['contract.Oid,'Contract.Cid, '_`,_['step:_['initial.Step],'_`,_['inputs:_[T'],'_`,_['contract:_[T],'state:_['initialState.State]]]]]]
         if T :=  processMetaContract(generateMetaContract(S)) 
-        /\ T' := generateMetaInput(S').
+        /\ T' := generateMetaInput(S') .
 
     op generateMetaInput : String -> Term .
     eq generateMetaInput(S) = getTerm(metaParse(input, tokenize(S), 'InputList)) .
