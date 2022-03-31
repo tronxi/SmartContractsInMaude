@@ -41,12 +41,12 @@ fmod UPLC-PROCESS-MODULE is
     ceq parseBuiltinName(T) = tokenize(S')
     if Q := downTerm(T, Qid)
         /\ S := string(Q) + ".BuiltName"
-        /\ S' := cleamBuiltinName(S) .
+        /\ S' := cleanBuiltinName(S) .
 
-    op cleamBuiltinName : String -> String .
-    ceq cleamBuiltinName(S) = S
+    op cleanBuiltinName : String -> String .
+    ceq cleanBuiltinName(S) = S
         if containUnserscore(S) = notFound .
-    ceq cleamBuiltinName(S) = cleamBuiltinName(S')
+    ceq cleanBuiltinName(S) = cleanBuiltinName(S')
         if N := containUnserscore(S)
         /\ S' := substr(S, 0, N) + "-" + substr(S, N + 1, length(S)) [owise] .
 
