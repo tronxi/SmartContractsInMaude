@@ -1,5 +1,6 @@
 fmod UPLC-PROCESS-MODULE is
     pr META-LEVEL .
+    pr LEXICAL .
 
     var FM : FModule .
     var LT : TermList .
@@ -13,6 +14,11 @@ fmod UPLC-PROCESS-MODULE is
     var Eq : Equation .
     var OD : OpDecl .
     vars T T' : Term .
+    var S S' : String .
+    var Q : Qid .
+    var N : Nat .
+
+    op Qid : -> [Qid] [ctor] .
 
     op processModule : FModule Term -> FModule .
     eq processModule(FM, T) = addEquation(FM, eq 'program.Program = parseProgram(T) [none] .) .
@@ -21,7 +27,7 @@ fmod UPLC-PROCESS-MODULE is
     eq parseProgram('`(program__`)['token[T],T']) = '`(program__`)[parseVersion(T),parseTerm(T')] .
 
     op parseVersion : Term -> Term .
-    eq parseVersion(T) = '`(_._._`)['s_^16['0.Zero],'0.Zero,'0.Zero] .
+    eq parseVersion(T) = '`(_._._`)['s_^16['0.iZero],'0.iZero,'0.iZero] .
 
     op parseTerm : Term -> Term .
     eq parseTerm('`(builtin_`)['token[T]]) = '`(builtin_`)[parseBuiltinName(T)] [print "builtin"].
@@ -32,60 +38,20 @@ fmod UPLC-PROCESS-MODULE is
     eq parseTerm('`(error`).@Term@) = '`(error`).Term [print "error"].
 
     op parseBuiltinName : Term -> Term .
-    eq parseBuiltinName(''addInteger.Qid) = 'addInteger.BuiltName .
-    eq parseBuiltinName(''subtractInteger.Qid) = 'subtractInteger.BuiltName .
-    eq parseBuiltinName(''multiplyInteger.Qid) = 'multiplyInteger.BuiltName .
-    eq parseBuiltinName(''divideInteger.Qid) = 'divideInteger.BuiltName .
-    eq parseBuiltinName(''modInteger.Qid) = 'modInteger.BuiltName .
-    eq parseBuiltinName(''quotientInteger.Qid) = 'quotientInteger.BuiltName .
-    eq parseBuiltinName(''remainderInteger.Qid) = 'remainderInteger.BuiltName .
-    eq parseBuiltinName(''equalsInteger.Qid) = 'equalsInteger.BuiltName .
-    eq parseBuiltinName(''lessThanInteger.Qid) = 'lessThanInteger.BuiltName .
-    eq parseBuiltinName(''lessThanEqualsInteger.Qid) = 'lessThanEqualsInteger.BuiltName .
-    eq parseBuiltinName(''appendByteString.Qid) = 'appendByteString.BuiltName .
-    eq parseBuiltinName(''consByteString.Qid) = 'consByteString.BuiltName .
-    eq parseBuiltinName(''sliceByteString.Qid) = 'sliceByteString.BuiltName .
-    eq parseBuiltinName(''lengthOfByteString.Qid) = 'lengthOfByteString.BuiltName .
-    eq parseBuiltinName(''indexByteString.Qid) = 'indexByteString.BuiltName .
-    eq parseBuiltinName(''equalsByteString.Qid) = 'equalsByteString.BuiltName .
-    eq parseBuiltinName(''lessThanByteString.Qid) = 'lessThanByteString.BuiltName .
-    eq parseBuiltinName(''lessThanEqualsByteString.Qid) = 'lessThanEqualsByteString.BuiltName .
-    eq parseBuiltinName(''appendString.Qid) = 'appendString.BuiltName .
-    eq parseBuiltinName(''equalsString.Qid) = 'equalsString.BuiltName .
-    eq parseBuiltinName(''encodeUtf8.Qid) = 'encodeUtf8.BuiltName .
-    eq parseBuiltinName(''decodeUtf8.Qid) = 'decodeUtf8.BuiltName .
-    eq parseBuiltinName(''sha2_256.Qid) = 'sha2-256.BuiltName .
-    eq parseBuiltinName(''sha3_256.Qid) = 'sha3-256.BuiltName .
-    eq parseBuiltinName(''blake2b_256.Qid) = 'blake2b-256.BuiltName .
-    eq parseBuiltinName(''verifySignature.Qid) = 'verifySignature.BuiltName .
-    eq parseBuiltinName(''ifThenElse.Qid) = 'ifThenElse.BuiltName .
-    eq parseBuiltinName(''chooseUnit.Qid) = 'chooseUnit.BuiltName .
-    eq parseBuiltinName(''trace.Qid) = 'trace.BuiltName .
-    eq parseBuiltinName(''fstPair.Qid) = 'fstPair.BuiltName .
-    eq parseBuiltinName(''sndPair.Qid) = 'sndPair.BuiltName .
-    eq parseBuiltinName(''chooseList.Qid) = 'chooseList.BuiltName .
-    eq parseBuiltinName(''mkCons.Qid) = 'mkCons.BuiltName .
-    eq parseBuiltinName(''headList.Qid) = 'headList.BuiltName .
-    eq parseBuiltinName(''tailList.Qid) = 'tailList.BuiltName .
-    eq parseBuiltinName(''nullList.Qid) = 'nullList.BuiltName .
-    eq parseBuiltinName(''chooseData.Qid) = 'chooseData.BuiltName .
-    eq parseBuiltinName(''constrData.Qid) = 'constrData.BuiltName .
-    eq parseBuiltinName(''mapData.Qid) = 'mapData.BuiltName .
-    eq parseBuiltinName(''listData.Qid) = 'listData.BuiltName .
-    eq parseBuiltinName(''iData.Qid) = 'iData.BuiltName .
-    eq parseBuiltinName(''bData.Qid) = 'bData.BuiltName .
-    eq parseBuiltinName(''unConstrData.Qid) = 'unConstrData.BuiltName .
-    eq parseBuiltinName(''unMapData.Qid) = 'unMapData.BuiltName .
-    eq parseBuiltinName(''unListData.Qid) = 'unListData.BuiltName .
-    eq parseBuiltinName(''unIData.Qid) = 'unIData.BuiltName .
-    eq parseBuiltinName(''unBData.Qid) = 'unBData.BuiltName .
-    eq parseBuiltinName(''equalsData.Qid) = 'equalsData.BuiltName .
-    eq parseBuiltinName(''mkPairData.Qid) = 'mkPairData.BuiltName .
-    eq parseBuiltinName(''mkNilData.Qid) = 'mkNilData.BuiltName .
-    eq parseBuiltinName(''mkNilPairData.Qid) = 'mkNilPairData.BuiltName .
+    ceq parseBuiltinName(T) = tokenize(S')
+    if Q := downTerm(T, Qid)
+        /\ S := string(Q) + ".BuiltName"
+        /\ S' := cleamBuiltinName(S) .
 
+    op cleamBuiltinName : String -> String .
+    ceq cleamBuiltinName(S) = S
+        if containUnserscore(S) = notFound .
+    ceq cleamBuiltinName(S) = cleamBuiltinName(S')
+        if N := containUnserscore(S)
+        /\ S' := substr(S, 0, N) + "-" + substr(S, N + 1, length(S)) [owise] .
 
-
+    op containUnserscore : String -> FindResult .
+    eq containUnserscore(S) = find(S, "_", 0) .
 
     op addEquation : FModule Equation -> FModule .
     eq addEquation(fmod H is IL sorts SS . SSDS ODS MAS EqS endfm, Eq)

@@ -1,5 +1,14 @@
 fmod UPLC is
-    pr INT .
+    pr INT * (
+        sort Zero to iZero ,
+        sort NzNat to iNzNat ,
+        sort Nat to iNat ,
+        op _+_ to _i+_ ,
+        op _*_ to _i*_ ,
+        op _<_ to _i<_ ,
+        op _>_ to _i>_ ,
+        op _<=_ to _i<=_ , 
+        op _>=_ to _i>=_ ) .
     pr QID .
 
     sorts Var BuiltName Version Constant Program Term Atn Op Tn TnList .
@@ -8,7 +17,10 @@ fmod UPLC is
     subsort Var < Term .
     subsort Atn < Tn .
     subsort Tn < TnList .
+    subsort Int < Constant .
+    subsort String < Constant .
 
+    ops True False unit : -> Constant [ctor] .
     ops integer bytestring string bool unit data : -> Atn [ctor] .
     ops list pair : -> Op [ctor] .
 
@@ -42,6 +54,6 @@ fmod UPLC is
     op ((program__)) : Version Term -> Program [ctor] .
 
     op program : -> Program .
-    --- eq program = (program (16 . 0 . 0) (builtin name1)) .
+    --- eq program = (program (16 . 0 . 0) (builtin addInteger)) .
 
 endfm
