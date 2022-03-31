@@ -13,4 +13,3 @@ load state
 load operations
 load semantics
 load marlowe-executor
-load marlowe-io

@@ -1,6 +1,4 @@
-load process-module.maude
-load uplc-executor.maude
-load uplc.maude
+load loads.maude
 mod TEST is
     pr UPLC-EXECUTOR .
 endm

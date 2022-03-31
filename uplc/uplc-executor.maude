@@ -1,6 +1,5 @@
-load grammar.maude
 fmod UPLC-EXECUTOR is
-    pr PROCESS-MODULE .
+    pr UPLC-PROCESS-MODULE .
     pr GRAMMAR .
     pr LEXICAL .
     pr STRING .
@@ -9,7 +8,7 @@ fmod UPLC-EXECUTOR is
     var T : Term .
 
     op bubble : -> FModule .
-    eq bubble = upModule('BUBBLE, false) .
+    eq bubble = upModule('UPCL-BUBBLE, false) .
 
     op uplc : -> FModule .
     eq uplc = upModule('UPLC, false) .

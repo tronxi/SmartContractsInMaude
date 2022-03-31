@@ -1,4 +1,4 @@
-fmod PROCESS-MODULE is
+fmod UPLC-PROCESS-MODULE is
     pr META-LEVEL .
 
     var FM : FModule .

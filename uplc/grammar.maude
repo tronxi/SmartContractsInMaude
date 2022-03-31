@@ -33,7 +33,7 @@ fmod GRAMMAR is
     op ((program__)) : @Version@ @Term@ -> @Program@ [ctor] .
 endfm
 
-fmod BUBBLE is 
+fmod UPCL-BUBBLE is 
     inc QID-LIST .
     pr GRAMMAR .
 

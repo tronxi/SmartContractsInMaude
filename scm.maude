@@ -1,7 +1,7 @@
 load aux-modules.maude
 load grammar.maude
 load file.maude
-load marlowe/loads.maude
+load marlowe/marlowe-io.maude
 
 ***(
 Interface: Command processing
