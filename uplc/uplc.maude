@@ -1,5 +1,8 @@
 fmod UPLC is
-    pr INT * (
+    pr CONVERSION * (
+        sort String to sString,
+        sort Char to sChar,
+        sort FindResult to sFindResult,
         sort Zero to iZero ,
         sort NzNat to iNzNat ,
         sort Nat to iNat ,
@@ -54,6 +57,10 @@ fmod UPLC is
     op ((program__)) : Version Term -> Program [ctor] .
 
     op program : -> Program .
-    --- eq program = (program (16 . 0 . 0) (builtin addInteger)) .
+    --- eq program = (program (16 . 0 . 0) (con string "holac")) .
+
+    var S : sString .
+    op qidToInt:_ : sString -> Int .
+    eq qidToInt:(S) = rat(S, 10) .
 
 endfm

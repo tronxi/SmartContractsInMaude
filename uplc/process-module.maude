@@ -15,7 +15,7 @@ fmod UPLC-PROCESS-MODULE is
     var OD : OpDecl .
     vars T T' : Term .
     var S S' : String .
-    var Q : Qid .
+    vars Q : Qid .
     var N : Nat .
 
     op Qid : -> [Qid] [ctor] .
@@ -30,12 +30,31 @@ fmod UPLC-PROCESS-MODULE is
     eq parseVersion(T) = '`(_._._`)['s_^16['0.iZero],'0.iZero,'0.iZero] .
 
     op parseTerm : Term -> Term .
+    eq parseTerm('`(con__`)['token[''integer.Qid],'token[T]]) = '`(con__`)['integer.Atn, parseTermToIntTerm(T)] .
+    eq parseTerm('`(con__`)['token[''string.Qid],'token[T]]) = '`(con__`)['string.Atn, parseTermToStringTerm(T)] [print "conststring"].
+    eq parseTerm('`(con__`)['token[''bool.Qid],'token[''True.Qid]]) = '`(con__`)['bool.Atn,'True.Constant] .
+    eq parseTerm('`(con__`)['token[''bool.Qid],'token[''False.Qid]]) = '`(con__`)['bool.Atn,'False.Constant] .
+    eq parseTerm('`(con__`)['token[''unit.Qid],'token[''`(`).Qid]]) = '`(con__`)['unit.Atn,'unit.Constant] .
     eq parseTerm('`(builtin_`)['token[T]]) = '`(builtin_`)[parseBuiltinName(T)] [print "builtin"].
     eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[T,parseTerm(T')] [print "lam"].
     eq parseTerm('`[__`][T,T']) = '`[__`][parseTerm(T),parseTerm(T')] [print "application"].
     eq parseTerm('`(delay_`)[T]) = '`(delay_`)[parseTerm(T)] [print "delay"].
     eq parseTerm('`(force_`)[T]) = '`(force_`)[parseTerm(T)] [print "force"].
     eq parseTerm('`(error`).@Term@) = '`(error`).Term [print "error"].
+
+    op parseTermToIntTerm : Term -> Term .
+    ceq parseTermToIntTerm(T) = getTerm(metaReduce(uplc, 'qidToInt:_[T']))
+        if Q := downTerm(T, Qid)
+            /\ S := "\"" + string(Q) + "\".sString" 
+            /\ T' := tokenize(S) .
+
+    op uplc : -> FModule .
+    eq uplc = upModule('UPLC, false) .
+
+    op parseTermToStringTerm : Term -> Term .
+    ceq parseTermToStringTerm(T) = tokenize(S)
+        if Q := downTerm(T, Qid)
+            /\ S := string(Q) + ".String" .
 
     op parseBuiltinName : Term -> Term .
     ceq parseBuiltinName(T) = tokenize(S')
