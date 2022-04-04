@@ -1,6 +1,7 @@
 fmod UPLC-PROCESS-MODULE is
     pr META-LEVEL .
     pr LEXICAL .
+    pr INT .
 
     var FM : FModule .
     var LT : TermList .
@@ -15,8 +16,25 @@ fmod UPLC-PROCESS-MODULE is
     var OD : OpDecl .
     vars T T' : Term .
     var S S' : String .
-    vars Q : Qid .
     var N : Nat .
+    var Q : Qid .
+    var L : Letters .
+    vars I I' : Int .
+
+    sort Letters .
+    subsort String < Letters .
+
+    op _,_ : Letters Letters -> Letters [ctor assoc comm] .
+
+    op letters : -> Letters .
+    eq letters = "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
+                "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+                "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" . 
+
+    op validHexadecimalChar : -> Letters .
+    eq validHexadecimalChar = "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                    "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F" .
 
     op Qid : -> [Qid] [ctor] .
 
@@ -35,6 +53,7 @@ fmod UPLC-PROCESS-MODULE is
     eq parseTerm('`(con__`)['token[''bool.Qid],'token[''True.Qid]]) = '`(con__`)['bool.Atn,'True.Constant] .
     eq parseTerm('`(con__`)['token[''bool.Qid],'token[''False.Qid]]) = '`(con__`)['bool.Atn,'False.Constant] .
     eq parseTerm('`(con__`)['token[''unit.Qid],'token[''`(`).Qid]]) = '`(con__`)['unit.Atn,'unit.Constant] .
+    eq parseTerm('`(con__`)['token[''bytestring.Qid],'token[T]]) = '`(con__`)['bytestring.Atn,parseTermToByteStringTerm(T)] .
     eq parseTerm('`(builtin_`)['token[T]]) = '`(builtin_`)[parseBuiltinName(T)] [print "builtin"].
     eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[T,parseTerm(T')] [print "lam"].
     eq parseTerm('`[__`][T,T']) = '`[__`][parseTerm(T),parseTerm(T')] [print "application"].
@@ -55,6 +74,42 @@ fmod UPLC-PROCESS-MODULE is
     ceq parseTermToStringTerm(T) = tokenize(S)
         if Q := downTerm(T, Qid)
             /\ S := string(Q) + ".String" .
+
+    op parseTermToByteStringTerm : Term -> Term .
+    ceq parseTermToByteStringTerm(T) = tokenize(S')
+        if Q := downTerm(T, Qid)
+            /\ S := string(Q)
+            /\ startWithHash(S)
+            /\ bytestringLengthIsPar(S)
+            /\ allHexadecimalCharAreValid(S, 1)
+            /\ S' := "\"" + S + "\".String" .
+
+    op startWithHash : String -> Bool .
+    ceq startWithHash(S) = S' == "#"
+        if S' := substr(S, 0, 1) .
+
+    op bytestringLengthIsPar : String -> Bool .
+    ceq bytestringLengthIsPar(S) = (I' rem 2) == 0
+        if I := length(S)
+        /\ I' := sd(I,1) .
+
+    op allHexadecimalCharAreValid : String Int -> Bool .
+    ceq allHexadecimalCharAreValid(S, I) = isValidHexadecimalChar(S') 
+        and allHexadecimalCharAreValid(S, s(I)) 
+        if S' := substr(S, I, 1)
+        /\ I < length(S) .
+    eq allHexadecimalCharAreValid(S, I) = true [owise] .
+
+    op isValidHexadecimalChar : String -> Bool .
+    eq isValidHexadecimalChar(S) = containInLetters(S, validHexadecimalChar) .
+
+    op startWithLetter : Qid -> Bool .
+    ceq startWithLetter(Q) = containInLetters(S, letters) 
+        if S := substr(string(Q), 0, 1) .
+
+    op containInLetters : String Letters -> Bool .
+    eq containInLetters(S, (S, L)) = true .
+    eq containInLetters(S, L) = false [owise] .
 
     op parseBuiltinName : Term -> Term .
     ceq parseBuiltinName(T) = tokenize(S')

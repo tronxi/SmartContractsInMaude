@@ -5,7 +5,8 @@ endm
 set print attribute on .
 
 --- red generateMetaProgram("(program 1c.0.0 (con integer 16))") .
-red processMetaProgram(generateMetaProgram("(program 1.0.0 (con integer 122))")) .
+red processMetaProgram(generateMetaProgram("(program 1.0.0 (lam 9x(con bytestring #FFFaaFFF)))")) .
 --- red uplc .
---- red parseTermToIntTerm(''16.Qid) .
+--- red in STRING : substr("#FFFF", 2, 1) .
+--- red allHexadecimalCharAreValid("#FF00", 1) .
 q

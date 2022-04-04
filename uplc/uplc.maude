@@ -14,12 +14,14 @@ fmod UPLC is
         op _>=_ to _i>=_ ) .
     pr QID .
 
-    sorts Var BuiltName Version Constant Program Term Atn Op Tn TnList .
+    sorts Var BuiltName Version Constant Program Term Atn Op Tn TnList ByteString .
     
     subsort Qid < Var .
     subsort Var < Term .
     subsort Atn < Tn .
     subsort Tn < TnList .
+    subsort String < ByteString .
+    subsort ByteString < Constant .
     subsort Int < Constant .
     subsort String < Constant .
 
