@@ -14,12 +14,12 @@ fmod UPLC-PROCESS-MODULE is
     var EqS : EquationSet .
     var Eq : Equation .
     var OD : OpDecl .
-    vars T T' : Term .
-    var S S' : String .
+    vars T T' T'' T''' : Term .
+    vars S S' S'' S''' : String .
     var N : Nat .
     var Q : Qid .
     var L : Letters .
-    vars I I' : Int .
+    vars I I' I'' : Int .
 
     sort Letters .
     subsort String < Letters .
@@ -31,13 +31,18 @@ fmod UPLC-PROCESS-MODULE is
                 "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
                 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
                 "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" .
+
+    op numbers : -> Letters .
+    eq numbers = "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" .
+
+    op validVersionChar : -> Letters .
+    eq validVersionChar = numbers, "." .
     
     op validVarChar : -> Letters .
-    eq validVarChar = letters , "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" .
+    eq validVarChar = letters , numbers .
 
     op validHexadecimalChar : -> Letters .
-    eq validHexadecimalChar = "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-                    "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F" .
+    eq validHexadecimalChar = numbers , "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F" .
 
     op Qid : -> [Qid] [ctor] .
 
@@ -48,21 +53,55 @@ fmod UPLC-PROCESS-MODULE is
     eq parseProgram('`(program__`)['token[T],T']) = '`(program__`)[parseVersion(T),parseTerm(T')] .
 
     op parseVersion : Term -> Term .
-    eq parseVersion(T) = '`(_._._`)['s_^16['0.iZero],'0.iZero,'0.iZero] .
+    ceq parseVersion(T) = '`(_._._`)[T',T'',T'''] 
+        if Q := downTerm(T, Qid)
+        /\ S := string(Q)
+        /\ allVersionCharAreValid(S, 0)
+        /\ I := find(S, ".", 0)
+        /\ I' := find(S, ".", s(I))
+        /\ S' := "\"" + cleanZeros(substr(S, 0, I)) + "\".sString" 
+        /\ S'' := "\"" + cleanZeros(substr(S, s(I), sd(sd(I',1), I))) + "\".sString" 
+        /\ S''' := "\"" + cleanZeros(substr(S, s(I'), sd(sd(length(S),1), I'))) + "\".sString"
+        /\ T' := getTerm(metaReduce(uplc, 'qidToInt:_[tokenize(S')]))
+        /\ T'' := getTerm(metaReduce(uplc, 'qidToInt:_[tokenize(S'')]))
+        /\ T''' := getTerm(metaReduce(uplc, 'qidToInt:_[tokenize(S''')])) .
+
+    op allVersionCharAreValid : String Int -> Bool .
+    ceq allVersionCharAreValid(S, I) = isValidVersionChar(S') 
+        and allVersionCharAreValid(S, s(I)) 
+        if S' := substr(S, I, 1)
+        /\ I < length(S) .
+    eq allVersionCharAreValid(S, I) = true [owise] .
+
+    op isValidVersionChar : String -> Bool .
+    eq isValidVersionChar(S) = containInLetters(S, validVersionChar) .
+
+    op cleanZeros : String -> String .
+    ceq cleanZeros(S) = S
+        if startWithZero(S)
+        /\ length(S) == 1 .
+    ceq cleanZeros(S) = cleanZeros(S')
+        if startWithZero(S)
+        /\ S' := substr(S, 1, length(S)) .
+    eq cleanZeros(S) = S [owise] .
+
+    op startWithZero : String -> Bool .
+    ceq startWithZero(S) = S' == "0"
+        if S' := substr(S, 0, 1) .
 
     op parseTerm : Term -> Term .
     eq parseTerm('`(con__`)['token[''integer.Qid],'token[T]]) = '`(con__`)['integer.Atn, parseTermToIntTerm(T)] .
-    eq parseTerm('`(con__`)['token[''string.Qid],'token[T]]) = '`(con__`)['string.Atn, parseTermToStringTerm(T)] [print "conststring"].
+    eq parseTerm('`(con__`)['token[''string.Qid],'token[T]]) = '`(con__`)['string.Atn, parseTermToStringTerm(T)] .
     eq parseTerm('`(con__`)['token[''bool.Qid],'token[''True.Qid]]) = '`(con__`)['bool.Atn,'True.Constant] .
     eq parseTerm('`(con__`)['token[''bool.Qid],'token[''False.Qid]]) = '`(con__`)['bool.Atn,'False.Constant] .
     eq parseTerm('`(con__`)['token[''unit.Qid],'token[''`(`).Qid]]) = '`(con__`)['unit.Atn,'unit.Constant] .
     eq parseTerm('`(con__`)['token[''bytestring.Qid],'token[T]]) = '`(con__`)['bytestring.Atn,parseTermToByteStringTerm(T)] .
-    eq parseTerm('`(builtin_`)['token[T]]) = '`(builtin_`)[parseBuiltinName(T)] [print "builtin"].
-    eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[isValidVarTerm(T),parseTerm(T')] [print "lam"].
-    eq parseTerm('`[__`][T,T']) = '`[__`][parseTerm(T),parseTerm(T')] [print "application"].
-    eq parseTerm('`(delay_`)[T]) = '`(delay_`)[parseTerm(T)] [print "delay"].
-    eq parseTerm('`(force_`)[T]) = '`(force_`)[parseTerm(T)] [print "force"].
-    eq parseTerm('`(error`).@Term@) = '`(error`).Term [print "error"].
+    eq parseTerm('`(builtin_`)['token[T]]) = '`(builtin_`)[parseBuiltinName(T)] .
+    eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[isValidVarTerm(T),parseTerm(T')] .
+    eq parseTerm('`[__`][T,T']) = '`[__`][parseTerm(T),parseTerm(T')] .
+    eq parseTerm('`(delay_`)[T]) = '`(delay_`)[parseTerm(T)] .
+    eq parseTerm('`(force_`)[T]) = '`(force_`)[parseTerm(T)] .
+    eq parseTerm('`(error`).@Term@) = '`(error`).Term .
 
     op parseTermToIntTerm : Term -> Term .
     ceq parseTermToIntTerm(T) = getTerm(metaReduce(uplc, 'qidToInt:_[T']))
