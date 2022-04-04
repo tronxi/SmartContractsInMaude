@@ -30,7 +30,10 @@ fmod UPLC-PROCESS-MODULE is
     eq letters = "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
                 "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
                 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-                "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" . 
+                "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" .
+    
+    op validVarChar : -> Letters .
+    eq validVarChar = letters , "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" .
 
     op validHexadecimalChar : -> Letters .
     eq validHexadecimalChar = "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -55,7 +58,7 @@ fmod UPLC-PROCESS-MODULE is
     eq parseTerm('`(con__`)['token[''unit.Qid],'token[''`(`).Qid]]) = '`(con__`)['unit.Atn,'unit.Constant] .
     eq parseTerm('`(con__`)['token[''bytestring.Qid],'token[T]]) = '`(con__`)['bytestring.Atn,parseTermToByteStringTerm(T)] .
     eq parseTerm('`(builtin_`)['token[T]]) = '`(builtin_`)[parseBuiltinName(T)] [print "builtin"].
-    eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[T,parseTerm(T')] [print "lam"].
+    eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[isValidVarTerm(T),parseTerm(T')] [print "lam"].
     eq parseTerm('`[__`][T,T']) = '`[__`][parseTerm(T),parseTerm(T')] [print "application"].
     eq parseTerm('`(delay_`)[T]) = '`(delay_`)[parseTerm(T)] [print "delay"].
     eq parseTerm('`(force_`)[T]) = '`(force_`)[parseTerm(T)] [print "force"].
@@ -74,6 +77,31 @@ fmod UPLC-PROCESS-MODULE is
     ceq parseTermToStringTerm(T) = tokenize(S)
         if Q := downTerm(T, Qid)
             /\ S := string(Q) + ".String" .
+
+    op isValidVarTerm : Term -> Term .
+    ceq isValidVarTerm(T) = T 
+        if Q := downTerm(T, Qid) 
+        /\ S := string(Q)
+        /\ startWithLetter(S)
+        /\ allVarCharAreValid(S, 0) .
+
+    op startWithLetter : String -> Bool .
+    ceq startWithLetter(S) = containInLetters(S', letters) 
+        if S' := substr(S, 0, 1) .
+
+    op allVarCharAreValid : String Int -> Bool .
+    ceq allVarCharAreValid(S, I) = isValidVarChar(S') 
+        and allVarCharAreValid(S, s(I)) 
+        if S' := substr(S, I, 1)
+        /\ I < length(S) .
+    eq allVarCharAreValid(S, I) = true [owise] .
+
+    op isValidVarChar : String -> Bool .
+    eq isValidVarChar(S) = containInLetters(S, validVarChar) .
+
+    op containInLetters : String Letters -> Bool .
+    eq containInLetters(S, (S, L)) = true .
+    eq containInLetters(S, L) = false [owise] .
 
     op parseTermToByteStringTerm : Term -> Term .
     ceq parseTermToByteStringTerm(T) = tokenize(S')
@@ -102,14 +130,6 @@ fmod UPLC-PROCESS-MODULE is
 
     op isValidHexadecimalChar : String -> Bool .
     eq isValidHexadecimalChar(S) = containInLetters(S, validHexadecimalChar) .
-
-    op startWithLetter : Qid -> Bool .
-    ceq startWithLetter(Q) = containInLetters(S, letters) 
-        if S := substr(string(Q), 0, 1) .
-
-    op containInLetters : String Letters -> Bool .
-    eq containInLetters(S, (S, L)) = true .
-    eq containInLetters(S, L) = false [owise] .
 
     op parseBuiltinName : Term -> Term .
     ceq parseBuiltinName(T) = tokenize(S')
