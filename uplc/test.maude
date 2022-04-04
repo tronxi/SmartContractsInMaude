@@ -4,8 +4,9 @@ mod TEST is
 endm
 set print attribute on .
 
---- red generateMetaProgram("(program 1c.0.0 (con integer 16))") .
-red processMetaProgram(generateMetaProgram("(program 1000.0045.03 (lam xc98aZ (con unit `(`))))")) .
+--- red generateMetaProgram("(program 1.0.0 [x x])") .
+--- red processMetaProgram(generateMetaProgram("(program 1000.0045.03 (lam xc98aZ (con unit `(`))))")) .
+red processMetaProgram(generateMetaProgram("(program 1000.0045.03 (lam x x))")) .
 --- red uplc .
 --- red in STRING : substr("#FFFF", 2, 1) .
 --- red allVarCharAreValid("xc98aZ", 0) .

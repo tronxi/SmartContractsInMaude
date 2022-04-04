@@ -97,12 +97,12 @@ fmod UPLC-PROCESS-MODULE is
     eq parseTerm('`(con__`)['token[''unit.Qid],'token[''`(`).Qid]]) = '`(con__`)['unit.Atn,'unit.Constant] .
     eq parseTerm('`(con__`)['token[''bytestring.Qid],'token[T]]) = '`(con__`)['bytestring.Atn,parseTermToByteStringTerm(T)] .
     eq parseTerm('`(builtin_`)['token[T]]) = '`(builtin_`)[parseBuiltinName(T)] .
-    eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[isValidVarTerm(T),parseTerm(T')] .
+    eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[parseVarTerm(T),parseTerm(T')] .
     eq parseTerm('`[__`][T,T']) = '`[__`][parseTerm(T),parseTerm(T')] .
     eq parseTerm('`(delay_`)[T]) = '`(delay_`)[parseTerm(T)] .
     eq parseTerm('`(force_`)[T]) = '`(force_`)[parseTerm(T)] .
     eq parseTerm('`(error`).@Term@) = '`(error`).Term .
-
+    eq parseTerm('token[T]) = parseVarTerm(T) .
     op parseTermToIntTerm : Term -> Term .
     ceq parseTermToIntTerm(T) = getTerm(metaReduce(uplc, 'qidToInt:_[T']))
         if Q := downTerm(T, Qid)
@@ -117,8 +117,8 @@ fmod UPLC-PROCESS-MODULE is
         if Q := downTerm(T, Qid)
             /\ S := string(Q) + ".String" .
 
-    op isValidVarTerm : Term -> Term .
-    ceq isValidVarTerm(T) = T 
+    op parseVarTerm : Term -> Term .
+    ceq parseVarTerm(T) = T 
         if Q := downTerm(T, Qid) 
         /\ S := string(Q)
         /\ startWithLetter(S)

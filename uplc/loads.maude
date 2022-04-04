@@ -2,3 +2,4 @@ load grammar.maude
 load process-module.maude
 load uplc-executor.maude
 load uplc.maude
+load uplc-semantics.maude
