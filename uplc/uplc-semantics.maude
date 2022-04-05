@@ -1,3 +1,24 @@
 mod UPLC-SEMANTICS is
     pr UPLC .
+    inc STD-STREAM .
+
+    sort Step .
+
+    ops initial executing finished : -> Step [ctor] .
+
+    op Program : -> Cid [ctor] .
+    op program : -> Oid [ctor] .
+
+    op program:_ : Program -> Attribute [ctor] .
+    op step:_ : Step -> Attribute [ctor] .
+
+    var P : Program .
+
+    rl [initial] :
+        < program : Program | step: initial,  program: P >
+    =>
+        < program : Program | step: finished, program: P > .
+
+    op program : -> Configuration .
+    --- eq program = <> < program : Program | step: initial,  program: (program ( 1 . 0 . 0) 'x) > .
 endm

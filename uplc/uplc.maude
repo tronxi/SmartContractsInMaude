@@ -1,31 +1,16 @@
 fmod UPLC is
-    pr CONVERSION * (
-        sort String to sString,
-        sort Char to sChar,
-        sort FindResult to sFindResult,
-        sort Zero to iZero ,
-        sort NzNat to iNzNat ,
-        sort Nat to iNat ,
-        op _+_ to _i+_ ,
-        op _*_ to _i*_ ,
-        op _<_ to _i<_ ,
-        op _>_ to _i>_ ,
-        op _<=_ to _i<=_ , 
-        op _>=_ to _i>=_ ) .
+    pr INT .
     pr QID .
 
-    sorts Var BuiltName Version Constant Program Term Atn Op Tn TnList ByteString .
+    sorts Var BuiltName Version Program UplcTerm Atn Op Tn TnList ByteString Unit ConstantType .
     
     subsort Qid < Var .
-    subsort Var < Term .
+    subsort Var < UplcTerm .
     subsort Atn < Tn .
     subsort Tn < TnList .
     subsort String < ByteString .
-    subsort ByteString < Constant .
-    subsort Int < Constant .
-    subsort String < Constant .
 
-    ops True False unit : -> Constant [ctor] .
+    ops unit : -> Unit [ctor] .
     ops integer bytestring string bool unit data : -> Atn [ctor] .
     ops list pair : -> Op [ctor] .
 
@@ -49,20 +34,22 @@ fmod UPLC is
 
     op _(_) : Op TnList -> Tn [ctor] .
 
-    op ((con__)) : Tn Constant -> Term [ctor] .
-    op ((builtin_)) : BuiltName -> Term [ctor] .
-    op ((lam__)) : Var Term -> Term [ctor] .
-    op [__] : Term Term -> Term [ctor] .
-    op ((delay_)) : Term -> Term [ctor] .
-    op ((force_)) : Term -> Term [ctor] .
-    op ((error)) : -> Term [ctor] .
-    op ((program__)) : Version Term -> Program [ctor] .
+    op __ : Tn String -> ConstantType [ctor] .
+    op __ : Tn Int -> ConstantType [ctor] .
+    op __ : Tn ByteString -> ConstantType [ctor] .
+    op __ : Tn Bool -> ConstantType [ctor] .
+    op __ : Tn Unit -> ConstantType [ctor] .
+
+    op ((con_)) : ConstantType -> UplcTerm [ctor] .
+    op ((builtin_)) : BuiltName -> UplcTerm [ctor] .
+    op ((lam__)) : Var UplcTerm -> UplcTerm [ctor] .
+    op [__] : UplcTerm UplcTerm -> UplcTerm [ctor] .
+    op ((delay_)) : UplcTerm -> UplcTerm [ctor] .
+    op ((force_)) : UplcTerm -> UplcTerm [ctor] .
+    op ((error)) : -> UplcTerm [ctor] .
+    op ((program__)) : Version UplcTerm -> Program [ctor] .
 
     op program : -> Program .
-    --- eq program = (program (16 . 0 . 0) (con string "holac")) .
-
-    var S : sString .
-    op qidToInt:_ : sString -> Int .
-    eq qidToInt:(S) = rat(S, 10) .
+    --- eq program = (program (16 . 0 . 0) (con unit unit)) .
 
 endfm

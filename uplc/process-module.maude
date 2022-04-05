@@ -2,6 +2,7 @@ fmod UPLC-PROCESS-MODULE is
     pr META-LEVEL .
     pr LEXICAL .
     pr INT .
+    pr CONVERSION .
 
     var FM : FModule .
     var LT : TermList .
@@ -19,7 +20,7 @@ fmod UPLC-PROCESS-MODULE is
     var N : Nat .
     var Q : Qid .
     var L : Letters .
-    vars I I' I'' : Int .
+    vars I I' : Int .
 
     sort Letters .
     subsort String < Letters .
@@ -59,12 +60,12 @@ fmod UPLC-PROCESS-MODULE is
         /\ allVersionCharAreValid(S, 0)
         /\ I := find(S, ".", 0)
         /\ I' := find(S, ".", s(I))
-        /\ S' := "\"" + cleanZeros(substr(S, 0, I)) + "\".sString" 
-        /\ S'' := "\"" + cleanZeros(substr(S, s(I), sd(sd(I',1), I))) + "\".sString" 
-        /\ S''' := "\"" + cleanZeros(substr(S, s(I'), sd(sd(length(S),1), I'))) + "\".sString"
-        /\ T' := getTerm(metaReduce(uplc, 'qidToInt:_[tokenize(S')]))
-        /\ T'' := getTerm(metaReduce(uplc, 'qidToInt:_[tokenize(S'')]))
-        /\ T''' := getTerm(metaReduce(uplc, 'qidToInt:_[tokenize(S''')])) .
+        /\ S' := cleanZeros(substr(S, 0, I))
+        /\ S'' := cleanZeros(substr(S, s(I), sd(sd(I',1), I)))
+        /\ S''' := cleanZeros(substr(S, s(I'), sd(sd(length(S),1), I')))
+        /\ T' := upTerm(rat(S', 10))
+        /\ T'' := upTerm(rat(S'', 10))
+        /\ T''' := upTerm(rat(S''', 10)) .
 
     op allVersionCharAreValid : String Int -> Bool .
     ceq allVersionCharAreValid(S, I) = isValidVersionChar(S') 
@@ -90,12 +91,12 @@ fmod UPLC-PROCESS-MODULE is
         if S' := substr(S, 0, 1) .
 
     op parseTerm : Term -> Term .
-    eq parseTerm('`(con__`)['token[''integer.Qid],'token[T]]) = '`(con__`)['integer.Atn, parseTermToIntTerm(T)] .
-    eq parseTerm('`(con__`)['token[''string.Qid],'token[T]]) = '`(con__`)['string.Atn, parseTermToStringTerm(T)] .
-    eq parseTerm('`(con__`)['token[''bool.Qid],'token[''True.Qid]]) = '`(con__`)['bool.Atn,'True.Constant] .
-    eq parseTerm('`(con__`)['token[''bool.Qid],'token[''False.Qid]]) = '`(con__`)['bool.Atn,'False.Constant] .
-    eq parseTerm('`(con__`)['token[''unit.Qid],'token[''`(`).Qid]]) = '`(con__`)['unit.Atn,'unit.Constant] .
-    eq parseTerm('`(con__`)['token[''bytestring.Qid],'token[T]]) = '`(con__`)['bytestring.Atn,parseTermToByteStringTerm(T)] .
+    eq parseTerm('`(con__`)['token[''integer.Qid],'token[T]]) = '`(con_`)['__['integer.Atn, parseTermToIntTerm(T)]].
+    eq parseTerm('`(con__`)['token[''string.Qid],'token[T]]) = '`(con_`)['__['string.Atn, parseTermToStringTerm(T)]] .
+    eq parseTerm('`(con__`)['token[''bool.Qid],'token[''True.Qid]]) = '`(con_`)['__['bool.Atn,'true.Bool]] .
+    eq parseTerm('`(con__`)['token[''bool.Qid],'token[''False.Qid]]) = '`(con_`)['__['bool.Atn,'false.Bool]] .
+    eq parseTerm('`(con__`)['token[''unit.Qid],'token[''`(`).Qid]]) = '`(con_`)['__['unit.Atn,'unit.Unit]] .
+    eq parseTerm('`(con__`)['token[''bytestring.Qid],'token[T]]) = '`(con_`)['__['bytestring.Atn,parseTermToByteStringTerm(T)]].
     eq parseTerm('`(builtin_`)['token[T]]) = '`(builtin_`)[parseBuiltinName(T)] .
     eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[parseVarTerm(T),parseTerm(T')] .
     eq parseTerm('`[__`][T,T']) = '`[__`][parseTerm(T),parseTerm(T')] .
@@ -103,11 +104,12 @@ fmod UPLC-PROCESS-MODULE is
     eq parseTerm('`(force_`)[T]) = '`(force_`)[parseTerm(T)] .
     eq parseTerm('`(error`).@Term@) = '`(error`).Term .
     eq parseTerm('token[T]) = parseVarTerm(T) .
+
     op parseTermToIntTerm : Term -> Term .
-    ceq parseTermToIntTerm(T) = getTerm(metaReduce(uplc, 'qidToInt:_[T']))
+    ceq parseTermToIntTerm(T) = T'
         if Q := downTerm(T, Qid)
-            /\ S := "\"" + string(Q) + "\".sString" 
-            /\ T' := tokenize(S) .
+            /\ S := cleanZeros(string(Q))
+            /\ T' := upTerm(rat(S, 10)) .
 
     op uplc : -> FModule .
     eq uplc = upModule('UPLC, false) .

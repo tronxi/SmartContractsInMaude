@@ -1,11 +1,14 @@
-fmod UPLC-EXECUTOR is
+mod UPLC-EXECUTOR is
     pr UPLC-PROCESS-MODULE .
     pr GRAMMAR .
     pr LEXICAL .
     pr STRING .
+    pr UPLC-SEMANTICS .
+
+    op error : -> [Configuration] [ctor] .
 
     var S : String .
-    var T : Term .
+    vars T T' : Term .
 
     op bubble : -> FModule .
     eq bubble = upModule('UPCL-BUBBLE, false) .
@@ -13,13 +16,21 @@ fmod UPLC-EXECUTOR is
     op uplc : -> FModule .
     eq uplc = upModule('UPLC, false) .
 
+    op semantics : -> FModule .
+    eq semantics = upModule('UPLC-SEMANTICS, false) .
+
+    op execute : String -> Configuration .
+    ceq execute(S) = downTerm(getTerm(metaRewrite(semantics, T, unbounded)), error)
+        if T := configuration(S) .
+
+    op configuration : String -> Term .
+    ceq configuration(S) = '__['<>.Portal,'<_:_|_>['program.Oid,'Program.Cid,'_`,_['program:_[T],'step:_['initial.Step]]]]
+        if T :=  processMetaProgram(generateMetaProgram(S)) .
+
     op processMetaProgram : Term -> Term .
     eq processMetaProgram(T) = getTerm(metaReduce(processModule(uplc, T), 'program.Program)) .
-
-    op module : Term -> FModule .
-    eq module(T) = processModule(uplc, T) .
 
     op generateMetaProgram : String -> Term .
     eq generateMetaProgram(S) = getTerm(metaParse(bubble, tokenize(S), '@Program@)) .
 
-endfm
+endm
