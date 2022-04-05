@@ -1,8 +1,8 @@
-load aux-modules.maude
+load commons/aux-modules.maude
 load grammar.maude
 load file.maude
 load marlowe/marlowe-io.maude
-
+load uplc/uplc-io.maude
 ***(
 Interface: Command processing
 )
@@ -13,6 +13,7 @@ mod MTP is
  pr LEXICAL .
  inc FILE .
  pr MARLOWE-IO .
+ pr UPLC-IO .
 
  vars  AtS Ats' : AttributeSet .
  vars TL IN : TermList .

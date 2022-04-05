@@ -40,6 +40,8 @@ fmod AUX-MODULE-OPS is
  var  M : Module .
  var  H : Header .
  var  Q : Qid .
+     var Eq : Equation .
+
 
  op setImports : Module ImportList -> Module .
  eq setImports(fmod H is IL sorts SS . SSDS ODS MAS EqS endfm, IL')
@@ -62,6 +64,10 @@ fmod AUX-MODULE-OPS is
  eq downQidList(('__[TL], TL')) = (downQidList(TL) downQidList(TL')) .
  eq downQidList((Q, TL)) = (downQid(Q) downQidList(TL)) .
  eq downQidList(empty) = nil .
+
+op addEquation : FModule Equation -> FModule .
+eq addEquation(fmod H is IL sorts SS . SSDS ODS MAS EqS endfm, Eq)
+   = fmod H is IL sorts SS . SSDS ODS MAS (EqS Eq) endfm .
 
 
 endfm

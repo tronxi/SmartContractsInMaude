@@ -5,32 +5,32 @@ mod UPLC-EXECUTOR is
     pr STRING .
     pr UPLC-SEMANTICS .
 
-    op error : -> [Configuration] [ctor] .
+    op uplcError : -> [Configuration] [ctor] .
 
     var S : String .
     vars T T' : Term .
 
-    op bubble : -> FModule .
-    eq bubble = upModule('UPCL-BUBBLE, false) .
+    op uplcBubble : -> FModule .
+    eq uplcBubble = upModule('UPCL-BUBBLE, false) .
 
     op uplc : -> FModule .
     eq uplc = upModule('UPLC, false) .
 
-    op semantics : -> FModule .
-    eq semantics = upModule('UPLC-SEMANTICS, false) .
+    op uplcSemantics : -> FModule .
+    eq uplcSemantics = upModule('UPLC-SEMANTICS, false) .
 
     op execute : String -> Configuration .
-    ceq execute(S) = downTerm(getTerm(metaRewrite(semantics, T, unbounded)), error)
+    ceq execute(S) = downTerm(getTerm(metaRewrite(uplcSemantics, T, unbounded)), uplcError)
         if T := configuration(S) .
 
     op configuration : String -> Term .
-    ceq configuration(S) = '__['<>.Portal,'<_:_|_>['program.Oid,'Program.Cid,'_`,_['program:_[T],'step:_['initial.Step]]]]
+    ceq configuration(S) = '__['<>.Portal,'<_:_|_>['program.Oid,'Program.Cid,'_`,_['program:_[T],'step:_['initial.UplcStep]]]]
         if T :=  processMetaProgram(generateMetaProgram(S)) .
 
     op processMetaProgram : Term -> Term .
-    eq processMetaProgram(T) = getTerm(metaReduce(processModule(uplc, T), 'program.Program)) .
+    eq processMetaProgram(T) = getTerm(metaReduce(uplcProcessModule(uplc, T), 'program.Program)) .
 
     op generateMetaProgram : String -> Term .
-    eq generateMetaProgram(S) = getTerm(metaParse(bubble, tokenize(S), '@Program@)) .
+    eq generateMetaProgram(S) = getTerm(metaParse(uplcBubble, tokenize(S), '@Program@)) .
 
 endm

@@ -1,18 +1,10 @@
 fmod PROCESS-MODULE is
     pr META-LEVEL .
+    pr AUX-MODULE-OPS .
 
     var FM : FModule .
     vars T T' T'' Party Party' Payee Token Value C C' : Term .
     var LT : TermList .
-    var H : Header .
-    var IL : ImportList .
-    var SS : SortSet .
-    var SSDS : SubsortDeclSet .
-    var ODS : OpDeclSet .
-    var MAS : MembAxSet .
-    var EqS : EquationSet .
-    var Eq : Equation .
-    var OD : OpDecl .
 
     op processModule : FModule Term -> FModule .
     eq processModule(FM, T) = addEquation(FM, eq 'contract.Contract = parseContract(T) [none] .) .
@@ -72,7 +64,4 @@ fmod PROCESS-MODULE is
     eq parseObservation('ValueEQ__[T, T']) = 'ValueEQ__[parseValue(T), parseValue(T')] .
     eq parseObservation(T) = T [owise] .
 
-    op addEquation : FModule Equation -> FModule .
-    eq addEquation(fmod H is IL sorts SS . SSDS ODS MAS EqS endfm, Eq)
-        = fmod H is IL sorts SS . SSDS ODS MAS (EqS Eq) endfm .
 endfm

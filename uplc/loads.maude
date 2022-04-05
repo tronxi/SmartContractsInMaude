@@ -1,6 +1,5 @@
 load grammar.maude
-load process-module.maude
+load uplc-process-module.maude
 load uplc.maude
-load file
 load uplc-semantics.maude
 load uplc-executor.maude

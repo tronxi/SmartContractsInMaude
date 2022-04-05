@@ -2,15 +2,15 @@ mod UPLC-SEMANTICS is
     pr UPLC .
     inc STD-STREAM .
 
-    sort Step .
+    sort UplcStep .
 
-    ops initial executing finished : -> Step [ctor] .
+    ops initial executing finished : -> UplcStep [ctor] .
 
     op Program : -> Cid [ctor] .
     op program : -> Oid [ctor] .
 
     op program:_ : Program -> Attribute [ctor] .
-    op step:_ : Step -> Attribute [ctor] .
+    op step:_ : UplcStep -> Attribute [ctor] .
 
     var P : Program .
 

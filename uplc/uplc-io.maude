@@ -1,0 +1,12 @@
+load loads.maude
+
+fmod UPLC-IO-SIGN is
+    sort @Token@ @Command@ .
+    subsort @Token@ < @Command@ .
+    op __ : @Command@ @Command@ -> @Command@ [ctor assoc] .
+endfm
+mod UPLC-IO is
+    inc STD-STREAM .
+    inc FILE .
+    pr UPLC-EXECUTOR .
+endm

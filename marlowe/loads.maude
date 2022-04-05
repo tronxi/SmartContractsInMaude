@@ -2,7 +2,6 @@ load command-sign
 load marlowe
 load input-sign
 load bubble
---- load file
 load process-module
 load accounts
 load bound-values

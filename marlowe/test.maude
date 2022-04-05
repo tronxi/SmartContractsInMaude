@@ -1,0 +1,9 @@
+load file.maude
+load ../commons/aux-modules.maude
+load marlowe-io.maude
+mod TEST is
+    pr MARLOWE-IO .
+endm
+
+erew execute-io .
+q
