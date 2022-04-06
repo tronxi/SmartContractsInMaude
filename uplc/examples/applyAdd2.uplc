@@ -15,44 +15,30 @@
               [
                 [
                   (builtin subtractInteger)
-                  [
-                    [ (builtin subtractInteger) (con integer 3) ]
-                    (con integer 2)
-                  ]
+                  [ [ (builtin addInteger) (con integer 0) ] (con integer 2) ]
                 ]
-                [ [ (builtin addInteger) (con integer 2) ] (con integer 0) ]
+                [
+                  [ (builtin subtractInteger) (con integer 0) ] (con integer 0)
+                ]
               ]
             ]
             [
               [
                 (builtin subtractInteger)
-                [
-                  [ (builtin multiplyInteger) (con integer 3) ] (con integer 0)
-                ]
+                [ [ (builtin addInteger) (con integer 0) ] (con integer 2) ]
               ]
-              [ [ (builtin multiplyInteger) (con integer 1) ] (con integer 1) ]
+              [ [ (builtin addInteger) (con integer 2) ] (con integer 1) ]
             ]
           ]
         )
         [
-          [
-            (builtin lessThanEqualsInteger)
-            [
-              [
-                (builtin subtractInteger)
-                [
-                  [ (builtin multiplyInteger) (con integer 3) ] (con integer 3)
-                ]
-              ]
-              [ [ (builtin subtractInteger) (con integer 2) ] (con integer 3) ]
-            ]
-          ]
+          (builtin sha2_256)
           [
             [
-              (builtin addInteger)
-              [ [ (builtin addInteger) (con integer 2) ] (con integer 3) ]
+              (builtin appendByteString)
+              [ (builtin sha3_256) (con bytestring #74) ]
             ]
-            [ [ (builtin subtractInteger) (con integer 3) ] (con integer 3) ]
+            [ (builtin sha2_256) (con bytestring #737775) ]
           ]
         ]
       ]
@@ -62,43 +48,35 @@
         x0
         [
           (lam
-            x2
+            x4
             [
               [
                 (builtin addInteger)
-                [
-                  [ (builtin subtractInteger) (con integer 0) ] (con integer 3)
-                ]
+                [ [ (builtin addInteger) (con integer 3) ] (con integer 2) ]
               ]
-              [ [ (builtin subtractInteger) (con integer 2) ] (con integer 1) ]
+              [ [ (builtin addInteger) (con integer 3) ] (con integer 0) ]
             ]
           )
-          [
-            [
-              (builtin subtractInteger)
-              [ [ (builtin addInteger) (con integer 1) ] (con integer 1) ]
-            ]
-            [ [ (builtin subtractInteger) (con integer 2) ] (con integer 0) ]
-          ]
+          [ (builtin sha2_256) [ (builtin sha3_256) (con bytestring #7a79) ] ]
         ]
       )
       [
         (lam
           x1
           [
+            (lam x3 [ (builtin sha2_256) (con bytestring #67) ])
             [
-              (builtin lessThanInteger)
-              [ [ (builtin multiplyInteger) (con integer 0) ] (con integer 3) ]
+              [ (builtin appendByteString) (con bytestring #6f77) ]
+              (con bytestring #69)
             ]
-            [ [ (builtin addInteger) (con integer 0) ] (con integer 1) ]
           ]
         )
         [
+          (lam x2 [ (builtin sha3_256) (con bytestring #) ])
           [
-            (builtin equalsInteger)
-            [ [ (builtin multiplyInteger) (con integer 3) ] (con integer 2) ]
+            [ (builtin equalsByteString) (con bytestring #6576) ]
+            (con bytestring #707a)
           ]
-          [ [ (builtin subtractInteger) (con integer 2) ] (con integer 0) ]
         ]
       ]
     ]
