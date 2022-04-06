@@ -4,7 +4,7 @@ fmod UPLC is
 
     sorts Var BuiltName Version Program UplcTerm Atn Op Tn TnList ByteString Unit ConstantType .
     
-    subsort Qid < Var .
+    subsort String < Var .
     subsort Var < UplcTerm .
     subsort Atn < Tn .
     subsort Tn < TnList .

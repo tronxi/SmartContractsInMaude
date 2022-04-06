@@ -31,7 +31,7 @@ fmod UPLC-PROCESS-MODULE is
     eq validVersionChar = numbers, "." .
     
     op validVarChar : -> Letters .
-    eq validVarChar = letters , numbers .
+    eq validVarChar = letters , numbers, "_", "'" .
 
     op validHexadecimalChar : -> Letters .
     eq validHexadecimalChar = numbers , "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F" .
@@ -111,7 +111,7 @@ fmod UPLC-PROCESS-MODULE is
             /\ S := string(Q) + ".String" .
 
     op parseVarTerm : Term -> Term .
-    ceq parseVarTerm(T) = T 
+    ceq parseVarTerm(T) = upTerm(S) 
         if Q := downTerm(T, Qid) 
         /\ S := string(Q)
         /\ startWithLetter(S)
