@@ -5,7 +5,7 @@ mod TEST is
     pr UPLC-IO .
 endm
 set print attribute on .
-
+--- red find(("q" | "q_0") : ("a" | "a_0") :  ("b" | "b_0"), "a")   .
 --- red generateMetaProgram("(program 1.0.0 (con unit ()))") .
 --- red processMetaProgram(generateMetaProgram("(program 1000.0045.03 x)")) .
 --- red processMetaProgram(generateMetaProgram("(program 10.0.0 [[(force (builtin chooseUnit)) (con unit `(`))] (con integer 2)])")) .

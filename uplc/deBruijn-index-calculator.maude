@@ -1,0 +1,75 @@
+fmod INDEX-CALCULATOR is 
+    pr UPLC .
+    pr CONVERSION .
+
+    sorts IndexedTerm Stack Pair .
+    subsort Pair < Stack .
+
+    op notFound : -> Pair [ctor] .
+    op (_|_) : String String -> Pair [ctor] .
+    op emptyStack : -> Stack [ctor] .
+    op _:_ : Stack Stack -> Stack [ctor assoc id: emptyStack] .
+
+    op _/_/_ : UplcTerm Int Stack -> IndexedTerm [ctor] .
+
+
+    var P : Program .
+    vars T T' T'' T''' : UplcTerm .
+    var V : Version .
+    vars I I' I'' : Int .
+    var CT : ConstantType .
+    var BN : BuiltName .
+    vars S S' S'' : String .
+    vars St St' St'' : Stack .
+    var Pr : Pair .
+
+    op push : Stack Pair -> Stack .
+    eq push(emptyStack, Pr) = Pr .
+    eq push(St, Pr) = Pr : St .
+
+    op pop : Stack -> Stack .
+    eq pop(emptyStack) = emptyStack .
+    eq pop(Pr : St) = St .
+
+    op find : Stack String -> Pair .
+    eq find(emptyStack, S) = notFound .
+    eq find((S | S') : St, S) = (S | S') .
+    eq find(Pr : St, S) = find(St, S) [owise] .
+
+    op calculateIndex : Program -> Program .
+    ceq calculateIndex((program V T)) = (program V T') 
+        if T' / I / St := calculateIndex(T, 0, emptyStack) .
+
+    op calculateIndex : UplcTerm Int Stack -> IndexedTerm .
+
+    eq calculateIndex(((con CT)), I, St) = ((con CT)) / I / St .
+
+    eq calculateIndex(((builtin BN)), I, St) = ((builtin BN)) / I / St .
+
+    ceq calculateIndex(((lam S T)), I, St) = ((lam S' T')) / I' / St''
+        if S' := appendIndex(S, I)
+        /\ St' := push(St, (S | S'))
+        /\ T' / I' / St'' := calculateIndex(T, s(I), St') .
+
+    ceq calculateIndex([T T'], I, St) = [T'' T'''] / I'' / St''
+        if T'' / I' / St' := calculateIndex(T, I, St) 
+        /\ T''' / I'' / St'' := calculateIndex(T', I', St) .
+
+    ceq calculateIndex(((delay T)), I, St) = ((delay T')) / I' / St'
+        if T' / I' / St' := calculateIndex(T, I, St) .
+
+    ceq calculateIndex(((force T)), I, St) = ((force T')) / I' / St'
+        if T' / I' / St' := calculateIndex(T, I, St) .    
+
+    eq calculateIndex(((error)), I, St) = ((error)) / I / St .
+
+    ceq calculateIndex(S, I, St) = S'' / I / pop(St)
+        if (S' | S'') := find(St, S) .
+
+    --- Free Variable
+    --- ceq calculateIndex(S, I, St) = S / I / St 
+    ---     if find(St, S) == notFound [print "Variable " I " is free"] .
+
+    op appendIndex : String Int -> String .
+    eq appendIndex(S, I) = S + "_" + string(I, 10) .
+endfm

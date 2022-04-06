@@ -47,7 +47,7 @@ fmod UPLC is
     op ((delay_)) : UplcTerm -> UplcTerm [ctor] .
     op ((force_)) : UplcTerm -> UplcTerm [ctor] .
     op ((error)) : -> UplcTerm [ctor] .
-    op ((program__)) : Version UplcTerm -> Program [ctor] .
+    op ((program__)) : Version UplcTerm -> Program [ctor format (d n++i ni ni n n--i)] .
 
     op program : -> Program .
     --- eq program = (program (16 . 0 . 0) (con unit unit)) .
