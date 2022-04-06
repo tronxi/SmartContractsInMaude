@@ -11,7 +11,6 @@ mod MTP is
  pr COMM-PARSING .
  pr STD-STREAM .
  pr LEXICAL .
- inc FILE .
  pr MARLOWE-IO .
  pr UPLC-IO .
 
@@ -45,7 +44,7 @@ mod MTP is
 
  *** Smart contract languages
  sort Lang .
- ops scilla marlowe : -> Lang [ctor] .
+ ops scilla marlowe uplc : -> Lang [ctor] .
 
  *** Attributes
  op input:_ : TermList -> Attribute [ctor] .
@@ -69,7 +68,8 @@ mod MTP is
      write(stdout, scm, printTokens('\n '\r '\! 'Error: ' '\o) + "unknown language.\n\n")
   if Q := downQid(T) /\
      (Q =/= 'scilla) and (Q =/= 'Scilla) 
-     and (Q =/= 'marlowe) and (Q =/= 'Marlowe) .
+     and (Q =/= 'marlowe) and (Q =/= 'Marlowe) 
+     and (Q =/= 'uplc) and (Q =/= 'Uplc) .
 
  crl [sel-marlowe] :
      < scm : SCM | state: executeComm, input: ('select_.['token[T]], IN), lang: L, AtS >
@@ -77,6 +77,13 @@ mod MTP is
       write(stdout, scm, printTokens('\n '\b 'Marlowe '\o 'selected 'as 'programming 'language. '\n '\n))
   if Q := downQid(T) /\
      (Q == 'marlowe) or (Q == 'Marlowe) .
+
+crl [sel-uplc] :
+     < scm : SCM | state: executeComm, input: ('select_.['token[T]], IN), lang: L, AtS >
+  => < scm : SCM | state: executeLanguage, lang: uplc, AtS >
+      write(stdout, scm, printTokens('\n '\b 'Uplc '\o 'selected 'as 'programming 'language. '\n '\n))
+  if Q := downQid(T) /\
+     (Q == 'uplc) or (Q == 'Uplc) .
 
  ***********************************************************************
  ***                    EXEC MARLOWE                                 ***
@@ -91,6 +98,23 @@ rl [exec-marlowe] :
 rl [terminate-marlowe] :
    <> wrote(marlowe, stdout)
    < scm : SCM | state: executeLanguage, lang: marlowe, AtS > < marlowe : Marlowe | state: end, Ats' >
+   =>
+   < scm : SCM | state: idle, lang: scilla, input: empty >
+   getLine(stdin, scm, "SCM> ") .
+
+ ***********************************************************************
+ ***                    EXEC UPLC                                 ***
+ ***********************************************************************
+rl [exec-uplc] :
+   wrote(scm, stdout)
+   < scm : SCM | state: executeLanguage, lang: uplc, AtS >
+   =>
+   uplc-execute-io
+   < scm : SCM | state: executeLanguage, lang: uplc, AtS > .
+
+rl [terminate-uplc] :
+   <> wrote(uplc, stdout)
+   < scm : SCM | state: executeLanguage, lang: uplc, AtS > < uplc : Uplc | state: endUplc, Ats' >
    =>
    < scm : SCM | state: idle, lang: scilla, input: empty >
    getLine(stdin, scm, "SCM> ") .

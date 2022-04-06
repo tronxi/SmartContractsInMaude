@@ -25,6 +25,7 @@ endfm
 
 fmod AUX-MODULE-OPS is
  pr META-LEVEL .
+ op error : -> [Qid] [ctor] .
 
  var  SSDS : SubsortDeclSet .
  var  EqS : EquationSet .
@@ -40,7 +41,8 @@ fmod AUX-MODULE-OPS is
  var  M : Module .
  var  H : Header .
  var  Q : Qid .
-     var Eq : Equation .
+ var Eq : Equation .
+ var T : Term .
 
 
  op setImports : Module ImportList -> Module .
@@ -68,6 +70,9 @@ fmod AUX-MODULE-OPS is
 op addEquation : FModule Equation -> FModule .
 eq addEquation(fmod H is IL sorts SS . SSDS ODS MAS EqS endfm, Eq)
    = fmod H is IL sorts SS . SSDS ODS MAS (EqS Eq) endfm .
+
+op qidToString : Term -> String .
+    eq qidToString(T) = string(downTerm(T, error)) .
 
 
 endfm

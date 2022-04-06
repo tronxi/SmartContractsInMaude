@@ -20,7 +20,7 @@ endfm
 
 fmod IO-INPUT is
     pr STRING .
-    sort Command IO-Input .
+    sorts Command IO-Input .
     subsort Command < IO-Input .
 
     op contract_ : String -> Command [ctor] .  
@@ -35,8 +35,7 @@ fmod PROCESS-TERM is
     pr IO-INPUT .
     pr LEXICAL .
     pr CONVERSION .
-
-    op error : -> [Qid] [ctor] .
+    pr AUX-MODULE-OPS .
 
     op io-bubble : -> FModule .
     eq io-bubble = upModule('IO-BUBBLE, false) .
@@ -47,15 +46,13 @@ fmod PROCESS-TERM is
     op parseTerm : String -> IO-Input .
     ceq parseTerm(S) = processTerm(T)
         if T := getTerm(metaParse(io-bubble, tokenize(S), '@Command@)) .
+    eq parseTerm(S) = invalid [owise] .
 
     op processTerm : Term -> IO-Input .
     eq processTerm('token[''q.Qid]) = q .
     eq processTerm('__['token[''c.Qid],'token[T]]) = contract qidToString(T) .
     eq processTerm('__['token[''i.Qid],'token[T]]) = inputs qidToString(T) .
     eq processTerm(T) = invalid [owise] .
-
-    op qidToString : Term -> String .
-    eq qidToString(T) = string(downTerm(T, error)) .
 
 endfm
 
@@ -189,7 +186,7 @@ mod MARLOWE-IO is
         write(stdout, marlowe, printTokens(generateMessage(Ats')))
         < marlowe : Marlowe | state: printResult > .
     
-    rl [contractExecuted] :
+    rl [printResult] :
         < marlowe : Marlowe | state: printResult > 
         =>
         < marlowe : Marlowe | state: pendingContract > .
