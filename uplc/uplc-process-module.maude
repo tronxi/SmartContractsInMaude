@@ -86,7 +86,7 @@ fmod UPLC-PROCESS-MODULE is
     eq parseTerm('`(con__`)['token[''string.Qid],'token[T]]) = '`(con_`)['__['string.Atn, parseTermToStringTerm(T)]] .
     eq parseTerm('`(con__`)['token[''bool.Qid],'token[''True.Qid]]) = '`(con_`)['__['bool.Atn,'true.Bool]] .
     eq parseTerm('`(con__`)['token[''bool.Qid],'token[''False.Qid]]) = '`(con_`)['__['bool.Atn,'false.Bool]] .
-    eq parseTerm('`(con__`)['token[''unit.Qid],'token[''`(`).Qid]]) = '`(con_`)['__['unit.Atn,'unit.Unit]] .
+    eq parseTerm('`(con__`)['token[''unit.Qid],'`(`).@Token@]) = '`(con_`)['__['unit.Atn,'unit.Unit]] .
     eq parseTerm('`(con__`)['token[''bytestring.Qid],'token[T]]) = '`(con_`)['__['bytestring.Atn,parseTermToByteStringTerm(T)]].
     eq parseTerm('`(builtin_`)['token[T]]) = '`(builtin_`)[parseBuiltinName(T)] .
     eq parseTerm('`(lam__`)['token[T],T']) = '`(lam__`)[parseVarTerm(T),parseTerm(T')] .

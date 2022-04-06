@@ -1,15 +1,16 @@
 load file.maude
 load ../commons/aux-modules.maude
-load loads.maude
+load uplc-io.maude
 mod TEST is
-    pr UPLC-EXECUTOR .
+    pr UPLC-IO .
 endm
 set print attribute on .
 
---- red generateMetaProgram("(program 1.0.0 [x x])") .
+--- red generateMetaProgram("(program 1.0.0 (con unit ()))") .
 --- red processMetaProgram(generateMetaProgram("(program 1000.0045.03 (con unit `(`)))")) .
 --- red processMetaProgram(generateMetaProgram("(program 10.0.0 [[(force (builtin chooseUnit)) (con unit `(`))] (con integer 2)])")) .
 --- red uplc .
 --- red semantics .
-erew execute("(program 10.0.0 [[(force (builtin chooseUnit)) (con unit `(`))] (con integer 2)])") .
+--- erew execute("(program 10.0.0 [[(force (builtin chooseUnit)) (con unit `(`))] (con integer 2)])") .
+erew uplc-execute-io .
 q

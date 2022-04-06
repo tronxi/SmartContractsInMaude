@@ -1,12 +1,162 @@
 load loads.maude
 
+set include BOOL off .
+
 fmod UPLC-IO-SIGN is
     sort @Token@ @Command@ .
     subsort @Token@ < @Command@ .
     op __ : @Command@ @Command@ -> @Command@ [ctor assoc] .
 endfm
+
+set include BOOL on .
+
+fmod UPLC-IO-BUBBLE is 
+    inc QID-LIST .
+    pr UPLC-IO-SIGN .
+
+    op token : Qid -> @Token@
+    [special (id-hook Bubble   (1 1)
+           op-hook qidSymbol (<Qids> : ~> Qid))] .
+endfm
+
+fmod UPLC-IO-INPUT is
+    pr STRING .
+    sorts UplcCommand  .
+
+    op program_ : String -> UplcCommand [ctor] .
+    op q : -> UplcCommand [ctor] .
+    op invalid : -> UplcCommand [ctor] .
+endfm
+
+fmod UPLC-PROCESS-TERM is
+    pr META-LEVEL .
+    pr UPLC-IO-INPUT .
+    pr LEXICAL .
+    pr CONVERSION .
+    pr AUX-MODULE-OPS .
+
+    op uplc-io-bubble : -> FModule .
+    eq uplc-io-bubble = upModule('UPLC-IO-BUBBLE, false) .
+
+    var S : String .
+    var T : Term .
+
+    op uplcParseTerm : String -> UplcCommand .
+    ceq uplcParseTerm(S) = uplcProcessTerm(T)
+        if T := getTerm(metaParse(uplc-io-bubble, tokenize(S), '@Command@)) .
+    eq uplcParseTerm(S) = invalid [owise] .
+
+    op uplcProcessTerm : Term -> UplcCommand .
+    eq uplcProcessTerm('token[''q.Qid]) = q .
+    eq uplcProcessTerm('__['token[''p.Qid],'token[T]]) = program qidToString(T) .
+    eq uplcProcessTerm(T) = invalid [owise] .
+
+endfm
+
 mod UPLC-IO is
     inc STD-STREAM .
+    pr UPLC-PROCESS-TERM .
     inc FILE .
     pr UPLC-EXECUTOR .
+
+    sort UplcIOState .
+
+    ops pendingProgram parsingProgram openingProgram openedProgram 
+        readingProgram programExecuted endUplc printResult : -> UplcIOState [ctor] .
+
+    op Uplc : -> Cid .
+    op uplc : -> Oid .
+
+    op state:_ : UplcIOState -> Attribute [ctor] .
+    op input:_ : UplcCommand -> Attribute [ctor] .
+    op programFile:_ : Oid -> Attribute [ctor] .
+    op program:_ : String -> Attribute [ctor] .
+
+    vars AtS Ats' : AttributeSet .
+    var C : UplcCommand .
+    vars Str ProgramFileName Program : String .
+    var ProgramFile : Oid .
+    var UplcStep : UplcStep .
+    var UplcProgram : Program .
+
+    rl [invalid] :
+        < uplc : Uplc | input: invalid , AtS >
+    =>
+        < uplc : Uplc | state: pendingProgram > 
+         write(stdout, uplc, printTokens('\r 'Invalid 'input '\o '\n)) .
+
+    rl [quit] :
+        < uplc : Uplc | input: q , AtS >
+    =>
+        < uplc : Uplc | state: endUplc > 
+         write(stdout, uplc, printTokens('\g 'Bye! '\o '\n)) .
+
+    rl [pendingProgram] : 
+        < uplc : Uplc | state: pendingProgram, AtS >
+    =>
+        < uplc : Uplc | state: parsingProgram, AtS >
+        getLine(stdin, uplc, "Program: > ") .
+
+    crl [parsingProgram] :
+        gotLine(uplc, stdin, Str)
+        < uplc : Uplc | state: parsingProgram, AtS >
+     => 
+        < uplc : Uplc | state: openingProgram, input: C, AtS >
+        if C := uplcParseTerm(Str) .
+
+    rl [openingProgram] :
+        < uplc : Uplc | state: openingProgram, input: program ProgramFileName , AtS >
+     => 
+        < uplc : Uplc | state: openedProgram,  AtS > 
+        openFile(fileManager, uplc, ProgramFileName, "r") .
+    
+    rl [openedProgram] :
+        openedFile(uplc, fileManager, ProgramFile)
+        < uplc : Uplc | state: openedProgram, AtS >
+     => 
+        < uplc : Uplc | state: readingProgram, programFile: ProgramFile, program: "", AtS >
+        getLine(ProgramFile, uplc) .
+
+    rl [readingProgram] :
+        gotLine(uplc, ProgramFile, Str) 
+        < uplc : Uplc | state: readingProgram, programFile: ProgramFile, program: Program, AtS >
+     => 
+        if Str == ""
+        then  
+            closeFile(ProgramFile, uplc)  
+            < uplc : Uplc | state: programExecuted > 
+            execute(Program)
+        else   
+            < uplc : Uplc | state: readingProgram, programFile: ProgramFile, program: (Program + Str), AtS > 
+            getLine(ProgramFile, uplc)
+        fi . 
+    
+    rl [programExecuted] :
+        < uplc : Uplc | state: programExecuted, AtS > < program : Program | Ats' >
+        =>
+        write(stdout, uplc, printTokens(uplcGenerateMessage(Ats')))
+        < uplc : Uplc | state: printResult > .
+
+    rl [printResult] :
+        < uplc : Uplc | state: printResult > 
+        =>
+        < uplc : Uplc | state: pendingProgram > .
+
+    op uplcGenerateMessage : AttributeSet -> QidList .
+    eq uplcGenerateMessage(step: UplcStep, program: UplcProgram, AtS) = 'Step uplcStepToString(UplcStep) '\n 'Program '\n '\t uplcProgramToString(UplcProgram) '\n .
+
+    op uplcStepToString : UplcStep -> QidList .
+    eq uplcStepToString(UplcStep) = metaPrettyPrint(uplcSemantics, none, upTerm(UplcStep), mixfix format number) .
+
+    op uplcProgramToString : Program -> QidList .
+    eq uplcProgramToString(UplcProgram) = metaPrettyPrint(uplcSemantics, none, upTerm(UplcProgram), mixfix format number) .
+
+    op uplcRun : -> Configuration .
+    eq uplcRun = <> < uplc : Uplc | state: pendingProgram > .
+
+    op uplc-io : -> Module .
+    eq uplc-io = upModule('UPLC-IO , false) .
+
+    op uplc-execute-io : -> Configuration .
+    eq uplc-execute-io = downTerm(getTerm(metaRewrite(uplc-io, upTerm(uplcRun), unbounded)), uplcError) .
 endm

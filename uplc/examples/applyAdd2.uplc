@@ -10,38 +10,50 @@
         (lam
           x0
           [
-            (lam
-              x2
+            [
+              (builtin multiplyInteger)
               [
-                [ (builtin subtractInteger) x2 ]
                 [
-                  [ (builtin multiplyInteger) (con integer 1) ] (con integer 1)
+                  (builtin subtractInteger)
+                  [
+                    [ (builtin subtractInteger) (con integer 3) ]
+                    (con integer 2)
+                  ]
                 ]
+                [ [ (builtin addInteger) (con integer 2) ] (con integer 0) ]
               ]
-            )
+            ]
             [
               [
-                (builtin multiplyInteger)
+                (builtin subtractInteger)
                 [
-                  [ (builtin multiplyInteger) (con integer 1) ] (con integer 3)
+                  [ (builtin multiplyInteger) (con integer 3) ] (con integer 0)
                 ]
               ]
-              [ [ (builtin addInteger) (con integer 0) ] (con integer 3) ]
+              [ [ (builtin multiplyInteger) (con integer 1) ] (con integer 1) ]
             ]
           ]
         )
         [
-          (lam
-            x1
+          [
+            (builtin lessThanEqualsInteger)
             [
-              [ (builtin appendByteString) x1 ]
               [
-                [ (builtin appendByteString) (con bytestring #6a617a) ]
-                (con bytestring #)
+                (builtin subtractInteger)
+                [
+                  [ (builtin multiplyInteger) (con integer 3) ] (con integer 3)
+                ]
               ]
+              [ [ (builtin subtractInteger) (con integer 2) ] (con integer 3) ]
             ]
-          )
-          [ (builtin sha2_256) [ (builtin sha3_256) (con bytestring #6f7261) ] ]
+          ]
+          [
+            [
+              (builtin addInteger)
+              [ [ (builtin addInteger) (con integer 2) ] (con integer 3) ]
+            ]
+            [ [ (builtin subtractInteger) (con integer 3) ] (con integer 3) ]
+          ]
         ]
       ]
     ]
@@ -49,46 +61,44 @@
       (lam
         x0
         [
-          [
-            (builtin subtractInteger)
+          (lam
+            x2
             [
-              (lam
-                x2
-                [
-                  [ (builtin multiplyInteger) (con integer 2) ] (con integer 3)
-                ]
-              )
               [
-                [ (builtin appendByteString) (con bytestring #6d6e6e) ]
-                (con bytestring #7a776f)
+                (builtin addInteger)
+                [
+                  [ (builtin subtractInteger) (con integer 0) ] (con integer 3)
+                ]
               ]
+              [ [ (builtin subtractInteger) (con integer 2) ] (con integer 1) ]
             ]
-          ]
+          )
           [
-            (lam
-              x3
-              [ [ (builtin subtractInteger) (con integer 0) ] (con integer 3) ]
-            )
-            [ [ (builtin subtractInteger) (con integer 0) ] (con integer 1) ]
+            [
+              (builtin subtractInteger)
+              [ [ (builtin addInteger) (con integer 1) ] (con integer 1) ]
+            ]
+            [ [ (builtin subtractInteger) (con integer 2) ] (con integer 0) ]
           ]
         ]
       )
       [
-        [
-          (builtin lessThanInteger)
+        (lam
+          x1
           [
-            (lam
-              x1 [ [ (builtin addInteger) (con integer 2) ] (con integer 3) ]
-            )
-            [ (builtin sha2_256) (con bytestring #647373) ]
+            [
+              (builtin lessThanInteger)
+              [ [ (builtin multiplyInteger) (con integer 0) ] (con integer 3) ]
+            ]
+            [ [ (builtin addInteger) (con integer 0) ] (con integer 1) ]
           ]
-        ]
+        )
         [
           [
-            (builtin subtractInteger)
-            [ [ (builtin multiplyInteger) (con integer 1) ] (con integer 3) ]
+            (builtin equalsInteger)
+            [ [ (builtin multiplyInteger) (con integer 3) ] (con integer 2) ]
           ]
-          [ [ (builtin subtractInteger) (con integer 0) ] (con integer 1) ]
+          [ [ (builtin subtractInteger) (con integer 2) ] (con integer 0) ]
         ]
       ]
     ]

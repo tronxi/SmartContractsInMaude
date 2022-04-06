@@ -1,4 +1,3 @@
-
 (program
   1.0.0
   [
@@ -180,6 +179,6 @@
         ]
       ]
     )
-    (con integer 2)
+    (con integer 4)
   ]
 )

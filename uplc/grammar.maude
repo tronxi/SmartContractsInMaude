@@ -7,6 +7,8 @@ fmod LEXICAL-GRAMMAR is
     subsort @Name@ < @BuiltName@ .
     subsort @Name@ < @Constant@ .
     subsort @Name@ < @Version@ .
+
+    op (()) : -> @Token@ [ctor] .
 endfm
 
 fmod GRAMMAR is
