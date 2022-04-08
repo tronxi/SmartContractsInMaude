@@ -1,34 +1,11 @@
 fmod TERM-REDUCTOR  is
     pr UPLC .
 
-    sorts SetPair Set .
-    subsort SetPair < Set .
-
-    op (_/_) : String UplcTerm -> SetPair [ctor] .
-    op emptySet : -> SetPair [ctor] .
-    op _:_ : SetPair SetPair -> SetPair [ctor assoc comm id: emptySet] .
-
-    vars St St' St'' : Set .
     var P : Program .
     vars T T' T'' : UplcTerm .
     var V : Version .
     var S : String .
     var CT : ConstantType .
-
-    op find : Set String -> UplcTerm .
-    eq find((S / T) : St, S) = T .
-
-    op extract : Program -> SetPair .
-    eq extract((program V T)) = extract(T, emptySet) .
-
-    op extract : UplcTerm SetPair -> Set .
-    eq extract((delay T), St) = extract(T, St) .
-    eq extract((force T), St) = extract(T, St) .
-    ceq extract([T T'], St) = St''
-        if St' := extract(T, St)
-        /\ St'' := extract(T', St') .
-    eq extract((lam S T), St) = extract(T, St : (S / T)) .
-    eq extract(T, St) = St [owise] .
 
     op replace : UplcTerm UplcTerm -> UplcTerm .
     eq replace(S, T') = T' [print "replace var " T'] .

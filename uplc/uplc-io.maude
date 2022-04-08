@@ -78,7 +78,7 @@ mod UPLC-IO is
     var ProgramFile : Oid .
     var UplcStep : UplcStep .
     var UplcProgram : Program .
-    var St : Set .
+    var T : UplcTerm .
 
     rl [invalid] :
         < uplc : Uplc | input: invalid , AtS >
@@ -144,7 +144,7 @@ mod UPLC-IO is
         < uplc : Uplc | state: pendingProgram > .
 
     op uplcGenerateMessage : AttributeSet -> QidList .
-    eq uplcGenerateMessage(step: UplcStep, program: UplcProgram, terms: St, AtS) = 'Step uplcStepToString(UplcStep) '\n 'Program '\n  uplcProgramToString(UplcProgram) '\n uplcSetToString(St) '\n .
+    eq uplcGenerateMessage(step: UplcStep, program: UplcProgram, result: T, AtS) = 'Step uplcStepToString(UplcStep) '\n 'Program '\n  uplcProgramToString(UplcProgram) '\n 'Result '\n uplcTermToString(T) '\n .
 
     op uplcStepToString : UplcStep -> QidList .
     eq uplcStepToString(UplcStep) = metaPrettyPrint(uplcSemantics, none, upTerm(UplcStep), mixfix format number) .
@@ -152,8 +152,8 @@ mod UPLC-IO is
     op uplcProgramToString : Program -> QidList .
     eq uplcProgramToString(UplcProgram) = metaPrettyPrint(uplcSemantics, none, upTerm(UplcProgram), mixfix format number) .
 
-    op uplcSetToString : Set -> QidList .
-    eq uplcSetToString(St) = metaPrettyPrint(uplcSemantics, none, upTerm(St), mixfix format number) .
+    op uplcTermToString : UplcTerm -> QidList .
+    eq uplcTermToString(T) = metaPrettyPrint(uplcSemantics, none, upTerm(T), mixfix format number) .
 
     op uplcRun : -> Configuration .
     eq uplcRun = <> < uplc : Uplc | state: pendingProgram > .
