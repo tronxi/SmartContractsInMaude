@@ -1,3 +1,3 @@
 (program 1.0.0 
-    (lam x [(lam x [(lam x x) x])x])
+    [ (lam x (force x)) (delay (con integer 10)) ]
 )

@@ -3,6 +3,7 @@ mod UPLC-SEMANTICS is
     inc STD-STREAM .
     pr QID .
     pr INDEX-CALCULATOR .
+    pr TERM-REDUCTOR .
 
     sort UplcStep .
 
@@ -13,14 +14,31 @@ mod UPLC-SEMANTICS is
 
     op program:_ : Program -> Attribute [ctor] .
     op step:_ : UplcStep -> Attribute [ctor] .
+    op terms:_ : Set -> Attribute [ctor] .
 
     vars P P' : Program .
+    vars T T' T'' : UplcTerm .
+    var V : Version .
+    var Ats : AttributeSet .
+    var St : Set .
 
     crl [initial] :
-        < program : Program | step: initial,  program: P >
+        < program : Program | step: initial,  program: P , Ats >
     =>
-        < program : Program | step: indexCalculated, program: P' > 
+        < program : Program | step: indexCalculated, program: P' , Ats > 
         if P' := calculateIndex(P) .
+    
+    crl [extractTerms] :
+        < program : Program | step: indexCalculated,  program: P , Ats >
+    =>
+        < program : Program | step: executing, program: P , terms: St , Ats >  
+        if St := extract(P) .
+
+    crl [executing] :
+        < program : Program | step: executing,  program: (program V T) , terms: St , Ats >
+    =>
+        < program : Program | step: finished, program: (program V T') , terms: St , Ats >  
+        if T' := applicate(T) .
 
     op program : -> Configuration .
     --- eq program = <> < program : Program | step: initial,  program: (program ( 1 . 0 . 0) 'x) > .

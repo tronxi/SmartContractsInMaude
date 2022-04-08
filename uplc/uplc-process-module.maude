@@ -93,7 +93,7 @@ fmod UPLC-PROCESS-MODULE is
     eq parseTerm('`[__`][T,T']) = '`[__`][parseTerm(T),parseTerm(T')] .
     eq parseTerm('`(delay_`)[T]) = '`(delay_`)[parseTerm(T)] .
     eq parseTerm('`(force_`)[T]) = '`(force_`)[parseTerm(T)] .
-    eq parseTerm('`(error`).@Term@) = '`(error`).Term .
+    eq parseTerm('`(error`).@Term@) = '`(error`).UplcTerm .
     eq parseTerm('token[T]) = parseVarTerm(T) .
 
     op parseTermToIntTerm : Term -> Term .
