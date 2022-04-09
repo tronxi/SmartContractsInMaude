@@ -1,6 +1,7 @@
 load grammar.maude
 load uplc-process-module.maude
 load uplc.maude
+load builtins-functions.maude
 load deBruijn-index-calculator.maude
 load term-reductor.maude
 load uplc-semantics.maude

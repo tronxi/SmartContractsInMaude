@@ -1,0 +1,10 @@
+fmod BUILTINS-FUNCTIONS is
+    pr UPLC .
+
+    var I : Int .
+
+    op getFunction : BuiltName -> UplcTerm .
+    eq getFunction(addInteger) = (
+        (lam "x" (lam "y" ("x")))
+        ) .
+endfm

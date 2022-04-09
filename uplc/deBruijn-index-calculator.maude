@@ -1,6 +1,7 @@
 fmod INDEX-CALCULATOR is 
     pr UPLC .
     pr CONVERSION .
+    pr BUILTINS-FUNCTIONS .
 
     sorts IndexedTerm Stack Pair .
     subsort Pair < Stack .
@@ -44,7 +45,7 @@ fmod INDEX-CALCULATOR is
 
     eq calculateIndex(((con CT)), I, St) = ((con CT)) / I / St .
 
-    eq calculateIndex(((builtin BN)), I, St) = ((builtin BN)) / I / St .
+    eq calculateIndex(((builtin BN)), I, St) = calculateIndex( getFunction(BN), I, St) [print "bu"].
 
     ceq calculateIndex(((lam S T)), I, St) = ((lam S' T')) / I' / St''
         if S' := appendIndex(S, I)

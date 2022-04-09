@@ -1,20 +1,59 @@
 fmod TERM-REDUCTOR  is
     pr UPLC .
+    pr BUILTINS-FUNCTIONS .
 
+    sorts SetPair Set .
+    subsort SetPair < Set .
+
+    op (_/_) : String UplcTerm -> SetPair [ctor] .
+    op emptySet : -> SetPair [ctor] .
+    op _:_ : SetPair SetPair -> SetPair [ctor assoc comm id: emptySet] .
+
+    vars St St' St'' : Set .
     var P : Program .
     vars T T' T'' : UplcTerm .
     var V : Version .
-    var S : String .
+    vars S S' : String .
     var CT : ConstantType .
+    var BN : BuiltName .
+
+    op find : Set String -> UplcTerm .
+    eq find((S / T) : St, S) = T .
+
+    op extract : Program -> SetPair .
+    eq extract((program V T)) = extract(T, emptySet) .
+
+    op extract : UplcTerm SetPair -> Set .
+    eq extract((delay T), St) = extract(T, St) .
+    eq extract((force T), St) = extract(T, St) .
+    ceq extract([T T'], St) = St''
+        if St' := extract(T, St)
+        /\ St'' := extract(T', St') .
+    eq extract((lam S T), St) = extract(T, St : (S / T)) .
+    eq extract(T, St) = St [owise] .
 
     op replace : UplcTerm UplcTerm -> UplcTerm .
-    eq replace(S, T') = T' [print "replace var " T'] .
+    eq replace(S, T') = S [print "replace var " T' " Term " S] .
     eq replace(((error)), T') = ((error)) .
     eq replace([T T'], T'') = replace(applicate([T T']), T'') [print "replace application " T T'] .
-    eq replace((lam S T), T') = replace(T, T') [print "replace lam" T ] .
+    ceq replace((lam S T), T') = applicate(T'')
+        if T'' := replaceLam(T, T', S) [print "replace lam " S " " T " with " T' " result " T''] .
     eq replace(((con CT)), T') = ((con CT)) [print "replace constant " CT ] .
     eq replace(((force T)), T') = replaceForce(((force T)), T') [print "replace force " T] .
     eq replace(((delay T)), T') = ((delay replace(T, T'))) [print "replace delay " T] .
+
+
+    op replaceLam : UplcTerm UplcTerm String -> UplcTerm .
+    ceq replaceLam(S, T, S') = T
+        if S == S' .
+    ceq replaceLam(S, T, S') = S
+        if S =/= S' .
+    eq replaceLam(((error)), T, S) = ((error)) .
+    eq replaceLam(((con CT)), T, S) = ((con CT)) .
+    eq replaceLam(((delay T')), T, S) = ((delay replaceLam(T', T, S))) .
+    eq replaceLam(((force T')), T, S) = ((force replaceLam(T', T, S))) .
+    eq replaceLam([T' T''], T, S) = [replaceLam(T', T, S) replaceLam(T'', T, S)] .
+    eq replaceLam(((lam S' T')), T, S) = ((lam S' replaceLam(T', T, S))) .
 
     op replaceForce : UplcTerm UplcTerm -> UplcTerm .
     eq replaceForce(((force ((delay T)))), T') = replace(T, T') .
@@ -28,12 +67,16 @@ fmod TERM-REDUCTOR  is
 
     op applicate : UplcTerm -> UplcTerm .
     eq applicate(((force ((delay T))))) = replace(T, T) .
-    ceq applicate([T T']) = replace(T, applicate(T'))
-        if applicate(T) :: Lambda [print "applicate application"] .
+    eq applicate([T T']) = replace(T, applicate(T')) [print "applicate application " T " - "  T'].
+        --- if applicate(T) :: Lambda or T :: Lambda [print "applicate application " T " - " T'] .
 
     ceq applicate((force (delay [T T']))) = replace(T, applicate(T')) 
      if applicate(T) :: Lambda [print "applicate force delay"] .
 
-    ceq applicate(T) = T
-        if not T :: Application [owise print "applicate value"] .
+    eq applicate(((error))) = ((error)) [print "applicate error"] .
+    eq applicate(((con CT))) = ((con CT)) [print "applicate con"] .
+    eq applicate(((delay T))) = ((delay T)) [print "applicate delay"] .
+    eq applicate(((builtin BN )))= ((builtin BN)) [print "applicate builtin"] .
+    eq applicate(((lam S T))) = ((lam S T)) [print "applicate lam"] .
+
 endfm
