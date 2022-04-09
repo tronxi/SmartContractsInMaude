@@ -67,8 +67,8 @@ fmod TERM-REDUCTOR  is
 
     op applicate : UplcTerm -> UplcTerm .
     eq applicate(((force ((delay T))))) = replace(T, T) .
-    eq applicate([T T']) = replace(T, applicate(T')) [print "applicate application " T " - "  T'].
-        --- if applicate(T) :: Lambda or T :: Lambda [print "applicate application " T " - " T'] .
+    ceq applicate([T T']) = replace(T, applicate(T'))
+        if applicate(T) :: Lambda or T :: Lambda [print "applicate application " T " - " T'] .
 
     ceq applicate((force (delay [T T']))) = replace(T, applicate(T')) 
      if applicate(T) :: Lambda [print "applicate force delay"] .

@@ -1,1 +1,6 @@
-(program 1.0.0 [ [ (builtin addInteger) (con integer 2)] (con integer 2) ])
+(program 1.0.0 
+    [ 
+        (lam x (lam y y))
+        (con integer 2)
+    ]
+)
