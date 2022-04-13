@@ -144,7 +144,9 @@ mod UPLC-IO is
         < uplc : Uplc | state: pendingProgram > .
 
     op uplcGenerateMessage : AttributeSet -> QidList .
-    eq uplcGenerateMessage(step: UplcStep, program: UplcProgram, result: T, AtS) = 'Step uplcStepToString(UplcStep) '\n 'Program '\n  uplcProgramToString(UplcProgram) '\n 'Result '\n uplcTermToString(T) '\n .
+    eq uplcGenerateMessage(step: UplcStep, program: UplcProgram, result: T, AtS) 
+        = 'Step uplcStepToString(UplcStep) '\n 'Program '\n  uplcProgramToString(UplcProgram) 
+        '\n 'Result '\n uplcTermToString(T) '\n .
 
     op uplcStepToString : UplcStep -> QidList .
     eq uplcStepToString(UplcStep) = metaPrettyPrint(uplcSemantics, none, upTerm(UplcStep), mixfix format number) .

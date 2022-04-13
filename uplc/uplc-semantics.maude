@@ -4,6 +4,7 @@ mod UPLC-SEMANTICS is
     pr QID .
     pr INDEX-CALCULATOR .
     pr TERM-REDUCTOR .
+    pr TERM-REDUCTOR2 .
 
     sort UplcStep .
 
@@ -15,24 +16,29 @@ mod UPLC-SEMANTICS is
     op program:_ : Program -> Attribute [ctor] .
     op step:_ : UplcStep -> Attribute [ctor] .
     op result:_ : UplcTerm -> Attribute [ctor] .
+    op map:_ : Map -> Attribute [ctor] .
 
     vars P P' : Program .
-    vars T T' T'' : UplcTerm .
+    vars T T' T'' T''' : UplcTerm .
     var V : Version .
     var Ats : AttributeSet .
+    var I : Int .
+    var St : Stack .
+    vars M M' : Map .
 
     crl [initial] :
-        < program : Program | step: initial,  program: P , Ats >
+        < program : Program | step: initial,  program: (program V T) , Ats >
     =>
-        < program : Program | step: indexCalculated, program: P' , Ats > 
-        if P' := calculateIndex(P) .
-
+        < program : Program | step: indexCalculated, program: (program V T') , map: M , Ats > 
+        if T' / I / St / M := calculateIndex(T, 0, emptyStack, emptyMap) .
 
     crl [executing] :
-        < program : Program | step: indexCalculated,  program: (program V T), Ats >
+        < program : Program | step: indexCalculated,  program: (program V T) , map: M , Ats >
     =>
-        < program : Program | step: finished, program: (program V T) , result: T' , Ats >  
-        if T' := applicate(T) .
+        < program : Program | step: finished, program: (program V T) , result: T''' ,  Ats >  
+        if T' := executeTerm(T, M)
+        /\ T'' := normalizeIndex(T', M)
+        /\ T''' / I / St / M' := calculateIndex(T'', 0, emptyStack, emptyMap) .
 
     op program : -> Configuration .
     --- eq program = <> < program : Program | step: initial,  program: (program ( 1 . 0 . 0) 'x) > .

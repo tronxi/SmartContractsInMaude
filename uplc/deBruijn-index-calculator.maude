@@ -3,15 +3,19 @@ fmod INDEX-CALCULATOR is
     pr CONVERSION .
     pr BUILTINS-FUNCTIONS .
 
-    sorts IndexedTerm Stack Pair .
+    sorts IndexedTerm Stack Pair Map .
     subsort Pair < Stack .
+    subsort Pair < Map .
+
+    op emptyMap : -> Map [ctor] .
+    op _/_ : Map Map -> Map [ctor assoc comm id: emptyMap] .
 
     op notFound : -> Pair [ctor] .
     op (_|_) : String String -> Pair [ctor] .
     op emptyStack : -> Stack [ctor] .
     op _:_ : Stack Stack -> Stack [ctor assoc id: emptyStack] .
 
-    op _/_/_ : UplcTerm Int Stack -> IndexedTerm [ctor] .
+    op _/_/_/_ : UplcTerm Int Stack Map -> IndexedTerm [ctor] .
 
 
     var P : Program .
@@ -23,6 +27,16 @@ fmod INDEX-CALCULATOR is
     vars S S' S'' : String .
     vars St St' St'' : Stack .
     var Pr : Pair .
+    vars CL CL' : ConList .
+    vars M M' M'' : Map .
+
+    op put : Map Pair -> Map .
+    eq put(emptyMap, Pr) = Pr .
+    eq put(M , (S | S')) = (S | S') / M  .
+
+    op findInMap : Map String -> Pair .
+    eq findInMap ((S | S') / M, S) = (S | S') .
+    eq findInMap(M, S) = notFound [owise] .
 
     op push : Stack Pair -> Stack .
     eq push(emptyStack, Pr) = Pr .
@@ -39,38 +53,73 @@ fmod INDEX-CALCULATOR is
 
     op calculateIndex : Program -> Program .
     ceq calculateIndex((program V T)) = (program V T') 
-        if T' / I / St := calculateIndex(T, 0, emptyStack) .
+        if T' / I / St / M := calculateIndex(T, 0, emptyStack, emptyMap) .
 
-    op calculateIndex : UplcTerm Int Stack -> IndexedTerm .
+    op calculateIndex : UplcTerm Int Stack Map -> IndexedTerm .
 
-    eq calculateIndex(((con CT)), I, St) = ((con CT)) / I / St .
+    eq calculateIndex(((con CT)), I, St, M) = ((con CT)) / I / St / M .
 
-    eq calculateIndex(((builtin BN)), I, St) = calculateIndex( getFunction(BN), I, St) [print "bu"].
+    eq calculateIndex(((builtin BN)), I, St, M) = calculateIndex( getFunction(BN), I, St, M) .
 
-    ceq calculateIndex(((lam S T)), I, St) = ((lam S' T')) / I' / St''
+    ceq calculateIndex(((BN CL)), I , St, M) = ((BN CL')) / I / St / M
+        if CL' := calculateIndexInConList(CL, St) .
+
+    ceq calculateIndex(((lam S T)), I, St, M) = ((lam S' T')) / I' / St'' / M''
         if S' := appendIndex(S, I)
         /\ St' := push(St, (S | S'))
-        /\ T' / I' / St'' := calculateIndex(T, s(I), St') .
+        /\ M' := put(M, (S' | S))
+        /\ T' / I' / St'' / M'' := calculateIndex(T, s(I), St', M') .
 
-    ceq calculateIndex([T T'], I, St) = [T'' T'''] / I'' / St''
-        if T'' / I' / St' := calculateIndex(T, I, St) 
-        /\ T''' / I'' / St'' := calculateIndex(T', I', St) .
+    ceq calculateIndex([T T'], I, St, M) = [T'' T'''] / I'' / St'' / M''
+        if T'' / I' / St' / M' := calculateIndex(T, I, St, M) 
+        /\ T''' / I'' / St'' / M'' := calculateIndex(T', I', St, M') .
 
-    ceq calculateIndex(((delay T)), I, St) = ((delay T')) / I' / St'
-        if T' / I' / St' := calculateIndex(T, I, St) .
+    ceq calculateIndex(((delay T)), I, St, M) = ((delay T')) / I' / St' / M'
+        if T' / I' / St' / M' := calculateIndex(T, I, St, M) .
 
-    ceq calculateIndex(((force T)), I, St) = ((force T')) / I' / St'
-        if T' / I' / St' := calculateIndex(T, I, St) .    
+    ceq calculateIndex(((force T)), I, St, M) = ((force T')) / I' / St' / M'
+        if T' / I' / St' / M' := calculateIndex(T, I, St, M) .    
 
-    eq calculateIndex(((error)), I, St) = ((error)) / I / St .
+    eq calculateIndex(((error)), I, St, M) = ((error)) / I / St / M .
 
-    ceq calculateIndex(S, I, St) = S'' / I / pop(St)
+    ceq calculateIndex(S, I, St, M) = S'' / I / pop(St) / M
         if (S' | S'') := find(St, S) .
 
     --- Free Variable
     --- ceq calculateIndex(S, I, St) = S / I / St 
     ---     if find(St, S) == notFound [print "Variable " I " is free"] .
 
+    op calculateIndexInConList : ConList Stack -> ConList .
+    eq calculateIndexInConList(emptyConList, St) = emptyConList .
+    ceq calculateIndexInConList(((S CL)), St) = S'' calculateIndexInConList(CL, St)
+        if (S' | S'') := find(St, S) .
+
     op appendIndex : String Int -> String .
     eq appendIndex(S, I) = S + "_" + string(I, 10) .
+
+
+    op normalizeIndex : UplcTerm Map -> UplcTerm .
+    eq normalizeIndex((con CT), M) = (con CT) .
+    eq normalizeIndex((builtin BN), M) = (builtin BN) .
+    eq normalizeIndex((error), M) = (error) .
+    eq normalizeIndex([T T'], M) = [normalizeIndex(T, M) normalizeIndex(T', M)] .
+    eq normalizeIndex((delay T), M) = (delay normalizeIndex(T, M)) .
+    eq normalizeIndex((force T), M) = (force normalizeIndex(T, M)) .
+    ceq normalizeIndex(S, M) = S''
+        if ( S' | S'' ) := findInMap(M, S) .
+    ceq normalizeIndex((lam S T), M) = (lam S'' normalizeIndex(T, M))
+        if ( S' | S'' ) := findInMap(M, S) .
+    eq normalizeIndex((BN CL), M) = (BN normalizeIndexInConList(M, CL)) .
+
+    op normalizeIndexInConList : Map ConList -> ConList .
+    eq normalizeIndexInConList(M, emptyConList) = emptyConList .
+    ceq normalizeIndexInConList(M, (T CL)) = S' normalizeIndexInConList(M, CL) 
+        if (S | S') := findInMap(M, T) .
+
+    op normalizeAndCalculateIndex : Map UplcTerm -> UplcTerm .
+    ceq normalizeAndCalculateIndex(M, T) = T''
+        if T' := normalizeIndex(T, M)
+        /\ T'' / I / St / M' := calculateIndex(T', 0, emptyStack, emptyMap) .
+    eq normalizeAndCalculateIndex(M, T) = (error) [owise print "ERROOOOR " M "\n\n" T "\n\n\n\n"].
+
 endfm

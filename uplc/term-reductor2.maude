@@ -1,0 +1,70 @@
+fmod TERM-REDUCTOR2 is 
+    pr UPLC .
+    pr BUILTINS-FUNCTIONS .
+    pr INDEX-CALCULATOR .
+
+    sort ForcesToDelete .
+
+    op _//_ : UplcTerm Nat -> ForcesToDelete [ctor] .
+
+    vars T T' T'' T''' : UplcTerm .
+    var CT : ConstantType .
+    vars S S' : String .
+    var BN : BuiltName .
+    vars CL CL' : ConList .
+    vars N  N' : Nat .
+    var CO : ConstanOperation .
+    var St : Stack .
+    var I : Int .
+    var M : Map .
+
+    op executeTerm : UplcTerm Map -> UplcTerm .
+    eq executeTerm((con CT), M) = (con CT)  .
+    eq executeTerm((error), M) = (error)  .
+    eq executeTerm((delay T), M) = (delay T)  .
+    eq executeTerm((lam S T), M) = (lam S T)  .
+    ceq executeTerm((force T), M) = executeTerm(T'', M)
+        if T' // N := executeForce(T, 0, M) 
+        /\ T'' := deleteDelay(T', N) .
+    eq executeTerm([T T'], M) = executeTerm(replaceTerm(T, executeTerm(T', M), M), M) .
+    eq executeTerm(CO, M) = evaluate(CO)  .
+    eq executeTerm(S, M) = S .
+    eq executeTerm(T, M) = (error) [owise print "OTRO " T] .
+
+    op replaceTerm : UplcTerm UplcTerm Map -> UplcTerm .
+    ceq replaceTerm((lam S T), T', M) = T''
+        if T'' := replaceTermInLambda(T, T', S) .
+    eq replaceTerm([T T'], T'', M) = replaceTerm(executeTerm([T T'], M), T'', M) .
+    eq replaceTerm((force T), T', M) = replaceTerm(executeTerm((force T), M), T', M) .
+
+    op replaceTermInLambda : UplcTerm UplcTerm String -> UplcTerm .
+    ceq replaceTermInLambda(S, T, S') = T
+        if S == S' .
+    ceq replaceTermInLambda(S, T, S') = S
+        if S =/= S' .
+    eq replaceTermInLambda((BN CL), T, S) = (BN replaceTermInConList(CL, T, S)) .
+    eq replaceTermInLambda((con CT), T, S') = (con CT) .
+    eq replaceTermInLambda((error), T, S') = (error) .
+    eq replaceTermInLambda((lam S T), T', S') = (lam S replaceTermInLambda(T, T', S')) .
+    ceq replaceTermInLambda((delay T), T', S) = T''
+        if T'' := (delay replaceTermInLambda(T, T', S)) .
+    eq replaceTermInLambda((force T), T', S) = (force replaceTermInLambda(T, T', S))  .
+    ceq replaceTermInLambda([T T'], T'', S) = T'''
+        if T''' := [replaceTermInLambda(T, T'', S) replaceTermInLambda(T', T'', S)] .
+
+    op replaceTermInConList : ConList UplcTerm String -> ConList .
+    eq replaceTermInConList(emptyConList, T, S) = emptyConList .
+    eq replaceTermInConList((CL S CL'), T, S) = CL T CL' .
+    eq replaceTermInConList((CL T' CL'), T, S) = CL T' CL' [owise] .
+
+    op executeForce : UplcTerm Nat Map -> ForcesToDelete .
+    eq executeForce((delay T), N, M) = T // N .
+    ceq executeForce((force T), N, M) = executeForce(T, N', M) 
+        if N' := s(N) .
+    ceq executeForce(T, N, M) = deleteDelay(executeTerm(T, M), 1) // N
+        if executeTerm(T, M) :: Delay .
+
+    op deleteDelay : UplcTerm Nat -> UplcTerm .
+    eq deleteDelay(T, 0) = T .
+    eq deleteDelay((delay T), N) = deleteDelay(T, N - 1) [owise] .
+endfm

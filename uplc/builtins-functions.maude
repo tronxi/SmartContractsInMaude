@@ -1,10 +1,13 @@
 fmod BUILTINS-FUNCTIONS is
     pr UPLC .
 
-    var I : Int .
+    vars I I' : Int .
 
     op getFunction : BuiltName -> UplcTerm .
-    eq getFunction(addInteger) = (
-        (lam "x" (lam "y" ("x")))
-        ) .
+    eq getFunction(addInteger) = ((lam "fttx" (lam "ftty" (addInteger ("fttx" "ftty"))))) .
+    eq getFunction(subtractInteger) = ((lam "x" (lam "y" (subtractInteger ("x" "y"))))) .
+
+    op evaluate : ConstanOperation -> UplcTerm .
+    eq evaluate((addInteger ((con integer I) (con integer I')))) = (con integer I + I') .
+    eq evaluate((subtractInteger ((con integer I) (con integer I')))) = (con integer I - I') .
 endfm

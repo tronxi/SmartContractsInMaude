@@ -4,5 +4,6 @@ load uplc.maude
 load builtins-functions.maude
 load deBruijn-index-calculator.maude
 load term-reductor.maude
+load term-reductor2.maude
 load uplc-semantics.maude
 load uplc-executor.maude
