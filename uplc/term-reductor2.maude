@@ -7,35 +7,63 @@ fmod TERM-REDUCTOR2 is
 
     op _//_ : UplcTerm Nat -> ForcesToDelete [ctor] .
 
-    vars T T' T'' T''' : UplcTerm .
+    vars T T' T'' T''' IT IT' : UplcTerm .
     var CT : ConstantType .
     vars S S' : String .
     var BN : BuiltName .
     vars CL CL' : ConList .
     vars N  N' : Nat .
     var CO : ConstanOperation .
-    var St : Stack .
-    var I : Int .
-    var M : Map .
+    vars M M' M'' M''' : Map .
 
-    op executeTerm : UplcTerm Map -> UplcTerm .
-    eq executeTerm((con CT), M) = (con CT)  .
-    eq executeTerm((error), M) = (error)  .
-    eq executeTerm((delay T), M) = (delay T)  .
-    eq executeTerm((lam S T), M) = (lam S T)  .
-    ceq executeTerm((force T), M) = executeTerm(T'', M)
-        if T' // N := executeForce(T, 0, M) 
+    op executeTerm : UplcTerm Map -> NormalizedTerm .
+    ceq executeTerm((con CT), M) = updateMap(M, M') / T
+        if M' / T := normalizeAndCalculateIndex(M, (con CT)) .
+
+    ceq executeTerm((error), M) = updateMap(M, M') / T
+        if M' / T := normalizeAndCalculateIndex(M, (error)) .
+
+    ceq executeTerm((delay T), M) = updateMap(M, M') / T'
+        if M' / T' := normalizeAndCalculateIndex(M, (delay T)) .
+
+    ceq executeTerm((lam S T), M) = updateMap(M, M') / T'
+        if M' / T' := normalizeAndCalculateIndex(M, (lam S T)) .
+
+    ceq executeTerm((force T), M) = executeTerm(T'', updateMap(M, M'))
+        if  M' / IT := normalizeAndCalculateIndex(M, (force T))
+        /\ T' // N := executeForce(IT, 0, M) 
         /\ T'' := deleteDelay(T', N) .
-    eq executeTerm([T T'], M) = executeTerm(replaceTerm(T, executeTerm(T', M), M), M) .
-    eq executeTerm(CO, M) = evaluate(CO)  .
-    eq executeTerm(S, M) = S .
-    eq executeTerm(T, M) = (error) [owise print "OTRO " T] .
+
+    ceq executeTerm([T T'], M) = executeNormalizedApply(IT, updateMap(M, M') )
+        if M' / IT := normalizeAndCalculateIndex(M, [T T']) .
+
+    ceq executeTerm(CO, M) = updateMap(M, M')  / evaluate(T')  
+        if M' / T' := normalizeAndCalculateIndex(M, CO) .
+
+    ceq executeTerm(S, M) = updateMap(M, M')  / T'
+        if M' / T' := normalizeAndCalculateIndex(M,  S) .
+
+    eq executeTerm(T, M) = M / (error) [owise print "OTRO " T] .
+
+    op executeNormalizedApply : UplcTerm Map -> NormalizedTerm .
+    ceq executeNormalizedApply([T T'], M) = updateMap(M'', M') / IT'
+        if M' / IT := executeTerm(T', M) 
+        /\ M''' / IT' := normalizeAndCalculateIndex(updateMap(M, M'), [T IT])
+        /\ T'' := replaceTermNormalizedApply(IT', M''')
+        /\ M'' / IT' := executeTerm(T'', updateMap(M', M'''))  .
+    
+    op replaceTermNormalizedApply : UplcTerm Map -> UplcTerm .
+    ceq replaceTermNormalizedApply([T T'], M) = T''
+        if T'' := replaceTerm(T, T', M) [print "si puedo " T " - " T' " result " T''].
 
     op replaceTerm : UplcTerm UplcTerm Map -> UplcTerm .
     ceq replaceTerm((lam S T), T', M) = T''
         if T'' := replaceTermInLambda(T, T', S) .
-    eq replaceTerm([T T'], T'', M) = replaceTerm(executeTerm([T T'], M), T'', M) .
-    eq replaceTerm((force T), T', M) = replaceTerm(executeTerm((force T), M), T', M) .
+    ceq replaceTerm([T T'], T'', M) = replaceTerm(IT, T'', updateMap(M, M'))
+        if M' / IT := executeTerm([T T'], M) .
+    ceq replaceTerm((force T), T', M) = replaceTerm(IT, T', updateMap(M, M')) 
+        if M' / IT := executeTerm((force T), M) .
+    eq replaceTerm(T, T', M) = T [owise print "no puedo " T " - " T'] .
 
     op replaceTermInLambda : UplcTerm UplcTerm String -> UplcTerm .
     ceq replaceTermInLambda(S, T, S') = T
@@ -55,14 +83,15 @@ fmod TERM-REDUCTOR2 is
     op replaceTermInConList : ConList UplcTerm String -> ConList .
     eq replaceTermInConList(emptyConList, T, S) = emptyConList .
     eq replaceTermInConList((CL S CL'), T, S) = CL T CL' .
-    eq replaceTermInConList((CL T' CL'), T, S) = CL T' CL' [owise] .
+    eq replaceTermInConList((CL), T, S) = CL [owise] .
 
     op executeForce : UplcTerm Nat Map -> ForcesToDelete .
     eq executeForce((delay T), N, M) = T // N .
     ceq executeForce((force T), N, M) = executeForce(T, N', M) 
         if N' := s(N) .
-    ceq executeForce(T, N, M) = deleteDelay(executeTerm(T, M), 1) // N
-        if executeTerm(T, M) :: Delay .
+    ceq executeForce(T, N, M) = deleteDelay(T', 1) // N
+        if M' / T' := executeTerm(T, M) 
+        /\ T' :: Delay .
 
     op deleteDelay : UplcTerm Nat -> UplcTerm .
     eq deleteDelay(T, 0) = T .

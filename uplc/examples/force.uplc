@@ -2,7 +2,7 @@
     (force(delay(force 
         [
             (lam x (delay x))
-            [[(builtin addInteger) (con integer 10)] (con integer 1) ]
+            [(lam x x) (con integer 2) ]
         ]
     )))
 )

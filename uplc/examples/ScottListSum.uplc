@@ -1,6 +1,6 @@
 (program
   1.0.0
-  [
+  (delay [
     [
       [
         (force
@@ -74,5 +74,5 @@
         (force (delay (delay (lam z (lam f z)))))
       ]
     ]
-  ]
+  ])
 )

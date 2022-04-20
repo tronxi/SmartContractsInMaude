@@ -19,12 +19,12 @@ mod UPLC-SEMANTICS is
     op map:_ : Map -> Attribute [ctor] .
 
     vars P P' : Program .
-    vars T T' T'' T''' : UplcTerm .
+    vars T T' T'' T''' IT : UplcTerm .
     var V : Version .
     var Ats : AttributeSet .
     var I : Int .
     var St : Stack .
-    vars M M' : Map .
+    vars M M' M'' : Map .
 
     crl [initial] :
         < program : Program | step: initial,  program: (program V T) , Ats >
@@ -35,10 +35,9 @@ mod UPLC-SEMANTICS is
     crl [executing] :
         < program : Program | step: indexCalculated,  program: (program V T) , map: M , Ats >
     =>
-        < program : Program | step: finished, program: (program V T) , result: T''' ,  Ats >  
-        if T' := executeTerm(T, M)
-        /\ T'' := normalizeIndex(T', M)
-        /\ T''' / I / St / M' := calculateIndex(T'', 0, emptyStack, emptyMap) .
+        < program : Program | step: finished, program: (program V T) , result: T'' ,  Ats >  
+        if M' / IT := executeTerm(T, M)
+        /\ M'' / T'' := normalizeAndCalculateIndex(M', IT) .
 
     op program : -> Configuration .
     --- eq program = <> < program : Program | step: initial,  program: (program ( 1 . 0 . 0) 'x) > .
