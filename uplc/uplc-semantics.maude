@@ -3,12 +3,14 @@ mod UPLC-SEMANTICS is
     inc STD-STREAM .
     pr QID .
     pr INDEX-CALCULATOR .
-    pr TERM-REDUCTOR .
-    pr TERM-REDUCTOR2 .
+    pr BUILTINS-FUNCTIONS .
+    pr META-LEVEL .
 
     sort UplcStep .
 
     ops initial indexCalculated executing finished : -> UplcStep [ctor] .
+
+    op uplcErrorTerm : -> [UplcTerm] [ctor] .
 
     op Program : -> Cid [ctor] .
     op program : -> Oid [ctor] .
@@ -19,12 +21,20 @@ mod UPLC-SEMANTICS is
     op map:_ : Map -> Attribute [ctor] .
 
     vars P P' : Program .
-    vars T T' T'' T''' : UplcTerm .
+    vars RT RT' T T' T'' T''' : UplcTerm .
     var V : Version .
     var Ats : AttributeSet .
     var I : Int .
     var St : Stack .
     vars M M' : Map .
+    var C : Con .
+    var L : Lambda .
+    var D : Delay .
+    vars S S' : String .
+    var BN : BuiltName .
+    vars CL CL' : ConList .
+    var CT : ConstantType .
+    var CO : ConstanOperation .
 
     crl [initial] :
         < program : Program | step: initial,  program: (program V T) , Ats >
@@ -32,14 +42,94 @@ mod UPLC-SEMANTICS is
         < program : Program | step: indexCalculated, program: (program V T') , map: M , Ats > 
         if T' / I / St / M := calculateIndex(T, 0, emptyStack, emptyMap) .
 
-    crl [executing] :
-        < program : Program | step: indexCalculated,  program: (program V T) , map: M , Ats >
+    crl [executeCon] :
+        < program : Program | step: indexCalculated,  program: (program V C) , Ats >
     =>
-        < program : Program | step: finished, program: (program V T) , result: T''' ,  Ats >  
-        if T' := executeTerm(T, M)
-        /\ T'' := normalizeIndex(T', M)
-        /\ T''' / I / St / M' := calculateIndex(T'', 0, emptyStack, emptyMap) .
+        < program : Program | step: finished, program: (program V RT) , result: RT ,  Ats >
+        if RT := rewriteTerm(C)  [print "con "] .
+    
+    rl [executeLam] :
+        < program : Program | step: indexCalculated,  program: (program V L) , Ats >
+    =>
+        < program : Program | step: finished, program: (program V L) , result: L ,  Ats > [print "lam "].
+
+    rl [executeDelay] :
+        < program : Program | step: indexCalculated,  program: (program V D) , Ats >
+    =>
+        < program : Program | step: finished, program: (program V D) , result: D ,  Ats > [print "delay "].
+    
+    rl [executeError] :
+        < program : Program | step: indexCalculated,  program: (program V (error)) , Ats >
+    =>
+        < program : Program | step: finished, program: (program V (error)) , result: (error) ,  Ats > [print "error"] .
+    
+    crl [executeOperation] :
+        < program : Program | step: indexCalculated,  program: (program V CO) , Ats >
+    =>
+        < program : Program | step: finished, program: (program V T) , result: T ,  Ats > 
+        if T := evaluate(CO) [print "operation"] .
+
+    crl [executeForceDelay] :
+        < program : Program | step: indexCalculated,  program: (program V (force (delay T))) , map: M , Ats >
+    =>
+        < program : Program | step: indexCalculated, program: (program V T') , map: M' , Ats > 
+        if RT := rewriteTerm((force(delay(T))))
+        /\ M' / T' := normalizeAndCalculateIndex(M, RT) [print "forceDelay "] .
+
+    crl [executeForceForceDelayDelay] :
+        < program : Program | step: indexCalculated,  program: (program V (force(force(delay(delay T))))) , map: M , Ats >
+    =>
+        < program : Program | step: indexCalculated, program: (program V T') , map: M',  Ats > 
+        if RT := rewriteTerm((force(force(delay(delay T)))))
+         /\ M' / T' := normalizeAndCalculateIndex(M, RT) [print "forceForce "] .
+    
+
+    crl [executeApplicationForceDelay] :
+        < program : Program | step: indexCalculated,  program: (program V [(force (delay T)) T']) , map: M , Ats >
+    =>
+        < program : Program | step: indexCalculated, program: (program V T'') , map: M', Ats > 
+        if RT := rewriteTerm([(force (delay T)) T'])
+        /\ M' / T'' := normalizeAndCalculateIndex(M, RT) [print "applicationForceDelay "] .
+
+    crl [executeApplicationForceForce] :
+        < program : Program | step: indexCalculated,  program: (program V [(force(force(delay(delay T)))) T']) , map: M , Ats >
+    =>
+        < program : Program | step: indexCalculated, program: (program V T'') , map: M', Ats > 
+        if RT := rewriteTerm([(force(force(delay(delay T)))) T'])
+        /\ M' / T'' := normalizeAndCalculateIndex(M, RT) [print "applicationForceForce "] .
+
+    crl [executeApplicationLambda] :
+        < program : Program | step: indexCalculated,  program: (program V [(lam S T) T']) , map: M , Ats >
+    =>
+        < program : Program | step: indexCalculated, program: (program V T'') , map: M', Ats > 
+        if RT := rewriteTerm([(lam S T) T'])
+        /\ M' / T'' := normalizeAndCalculateIndex(M, RT) [print "applicationLam "] .
+
+
+    crl [executeApplicationApplication] :
+        < program : Program | step: indexCalculated,  program: (program V [[T T'] T'']) , map: M , Ats >
+    =>
+        < program : Program | step: indexCalculated, program: (program V T''') , map: M', Ats > 
+        if T'' :: Lambda =/= true
+        /\ RT := rewriteTerm([T T'])
+        /\ M' / T''' := normalizeAndCalculateIndex(M, [RT T'']) [print "applicationFirst "] .
+    
+    crl [executeApplicationApplication] :
+        < program : Program | step: indexCalculated,  program: (program V [T [T' T'']]) , map: M , Ats >
+    =>
+        < program : Program | step: indexCalculated, program: (program V T''') , map: M', Ats > 
+        if RT := rewriteTerm([T' T''])
+        /\ M' / T''' := normalizeAndCalculateIndex(M, [T RT]) [print "applicationSecond "] .
 
     op program : -> Configuration .
     --- eq program = <> < program : Program | step: initial,  program: (program ( 1 . 0 . 0) 'x) > .
+
+    op uplcTermSemantics : -> Module .
+    eq uplcTermSemantics = upModule('UPLC-TERM-SEMANTICS, false) .
+
+    op rewriteTerm : UplcTerm -> UplcTerm .
+    eq rewriteTerm(T) = downTerm(getTerm(metaRewrite(uplcTermSemantics, upTerm(T), unbounded)), uplcErrorTerm) .
+
+    
+
 endm

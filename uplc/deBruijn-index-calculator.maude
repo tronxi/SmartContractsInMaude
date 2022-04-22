@@ -3,7 +3,7 @@ fmod INDEX-CALCULATOR is
     pr CONVERSION .
     pr BUILTINS-FUNCTIONS .
 
-    sorts IndexedTerm Stack Pair Map .
+    sorts NormalizedTerm IndexedTerm Stack Pair Map .
     subsort Pair < Stack .
     subsort Pair < Map .
 
@@ -17,6 +17,8 @@ fmod INDEX-CALCULATOR is
 
     op _/_/_/_ : UplcTerm Int Stack Map -> IndexedTerm [ctor] .
 
+    op _/_ : Map UplcTerm -> NormalizedTerm [ctor] .
+
 
     var P : Program .
     vars T T' T'' T''' : UplcTerm .
@@ -29,14 +31,21 @@ fmod INDEX-CALCULATOR is
     var Pr : Pair .
     vars CL CL' : ConList .
     vars M M' M'' : Map .
+    var C : Con .
 
     op put : Map Pair -> Map .
     eq put(emptyMap, Pr) = Pr .
-    eq put(M , (S | S')) = (S | S') / M  .
+    eq put((S | S'') / M, (S | S')) = (S | S') / M .
+    eq put(M , (S | S')) = (S | S') / M  [owise] .
 
-    op findInMap : Map String -> Pair .
+    op updateMap : Map Map -> Map .
+    eq updateMap(M, emptyMap) = M .
+    ceq updateMap(M, (S | S') / M') = updateMap(M'', M')
+        if M'' := put(M, (S | S')) .
+
+    op findInMap : Map UplcTerm -> Pair .
     eq findInMap ((S | S') / M, S) = (S | S') .
-    eq findInMap(M, S) = notFound [owise] .
+    eq findInMap(M, T) = notFound [owise] .
 
     op push : Stack Pair -> Stack .
     eq push(emptyStack, Pr) = Pr .
@@ -91,8 +100,9 @@ fmod INDEX-CALCULATOR is
 
     op calculateIndexInConList : ConList Stack -> ConList .
     eq calculateIndexInConList(emptyConList, St) = emptyConList .
-    ceq calculateIndexInConList(((S CL)), St) = S'' calculateIndexInConList(CL, St)
-        if (S' | S'') := find(St, S) .
+    ceq calculateIndexInConList(((C CL)), St) = S'' calculateIndexInConList(CL, St)
+        if (S' | S'') := find(St, C) .
+    eq calculateIndexInConList((C CL), St) = C calculateIndexInConList(CL, St) [owise] .
 
     op appendIndex : String Int -> String .
     eq appendIndex(S, I) = S + "_" + string(I, 10) .
@@ -113,13 +123,15 @@ fmod INDEX-CALCULATOR is
 
     op normalizeIndexInConList : Map ConList -> ConList .
     eq normalizeIndexInConList(M, emptyConList) = emptyConList .
-    ceq normalizeIndexInConList(M, (T CL)) = S' normalizeIndexInConList(M, CL) 
-        if (S | S') := findInMap(M, T) .
+    ceq normalizeIndexInConList(M, (C CL)) = S' normalizeIndexInConList(M, CL) 
+        if (S | S') := findInMap(M, C) .
+    eq normalizeIndexInConList(M, (C CL)) = C normalizeIndexInConList(M, CL) [owise] .
+        --- if findInMap(M, T) == notFound .
 
-    op normalizeAndCalculateIndex : Map UplcTerm -> UplcTerm .
-    ceq normalizeAndCalculateIndex(M, T) = T''
+    op normalizeAndCalculateIndex : Map UplcTerm -> NormalizedTerm .
+    ceq normalizeAndCalculateIndex(M, T) = M' / T''
         if T' := normalizeIndex(T, M)
         /\ T'' / I / St / M' := calculateIndex(T', 0, emptyStack, emptyMap) .
-    eq normalizeAndCalculateIndex(M, T) = (error) [owise print "ERROOOOR " M "\n\n" T "\n\n\n\n"].
+    eq normalizeAndCalculateIndex(M, T) = M / (error) [owise print "ERROOOOR " M "\n\n" T "\n\n\n\n"].
 
 endfm

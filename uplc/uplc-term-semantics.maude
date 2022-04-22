@@ -1,0 +1,37 @@
+mod UPLC-TERM-SEMANTICS is
+    pr UPLC .
+
+    vars T T' T'' T''' : UplcTerm .
+    vars S S' : String .
+    var BN : BuiltName .
+    vars CL CL' : ConList .
+    var CT : ConstantType .
+    var CO : ConstanOperation .
+
+    rl [forceDelay] : (force (delay T)) => T [print "termForceDelay"].
+    rl [forceForce] : (force (force (delay (delay T)))) => T [print "termForceForce"] .
+    rl [applicationForceDelay] : [(force(delay T)) T'] => [T T'] [print "termApplicationForceDelay" T].
+    rl [applicationForceForce] : [(force(force(delay(delay(T))))) T'] => [T T'] [print "termApplicationForceForce"].
+    crl [applicationLam] : [(lam S T) T'] => T''
+        if T'' := replaceTermInLambda(T, T', S) [print "termApplicationLam " T''].
+
+    op replaceTermInLambda : UplcTerm UplcTerm String -> UplcTerm .
+    ceq replaceTermInLambda(S, T, S') = T
+        if S == S' .
+    ceq replaceTermInLambda(S, T, S') = S
+        if S =/= S' .
+    eq replaceTermInLambda((BN CL), T, S) = (BN replaceTermInConList(CL, T, S)) .
+    eq replaceTermInLambda((con CT), T, S') = (con CT) .
+    eq replaceTermInLambda((error), T, S') = (error) .
+    eq replaceTermInLambda((lam S T), T', S') = (lam S replaceTermInLambda(T, T', S')) .
+    ceq replaceTermInLambda((delay T), T', S) = T''
+        if T'' := (delay replaceTermInLambda(T, T', S)) .
+    eq replaceTermInLambda((force T), T', S) = (force replaceTermInLambda(T, T', S))  .
+    ceq replaceTermInLambda([T T'], T'', S) = T'''
+        if T''' := [replaceTermInLambda(T, T'', S) replaceTermInLambda(T', T'', S)] .
+
+    op replaceTermInConList : ConList UplcTerm String -> ConList .
+    eq replaceTermInConList(emptyConList, T, S) = emptyConList .
+    eq replaceTermInConList((CL S CL'), T, S) = CL T CL' .
+    eq replaceTermInConList((CL T' CL'), T, S) = CL T' CL' [owise] .
+endm

@@ -3,6 +3,7 @@ load ../commons/aux-modules.maude
 load uplc-io.maude
 mod TEST is
     pr UPLC-IO .
+    --- pr UPLC-TERM-SEMANTICS .
 endm
 set print attribute on .
 --- red find(("q" | "q_0") : ("a" | "a_0") :  ("b" | "b_0"), "a")   .
@@ -13,4 +14,5 @@ set print attribute on .
 --- red semantics .
 --- erew execute("(program 10.0.0 [[(force (builtin chooseUnit)) (con unit `(`))] (con integer 2)])") .
 erew uplc-execute-io .
+--- erew [1] (con integer 2) .
 q

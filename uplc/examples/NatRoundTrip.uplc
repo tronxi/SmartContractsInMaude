@@ -42,16 +42,10 @@
             )
           )
         )
-        [ (builtin addInteger) (con integer 2) ]
+        [ (builtin addInteger) (con integer 1) ]
       ]
       (con integer 0)
     ]
-    [
-      (lam n (delay (lam z (lam f [ f n ]))))
-      [
-        (lam n (delay (lam z (lam f [ f n ]))))
-        [ (lam n (delay (lam z (lam f [ f n ])))) (delay (lam z (lam f z))) ]
-      ]
-    ]
+    [ (lam n (delay (lam z (lam f [ f n ])))) (delay (lam z (lam f z))) ]
   ]
 )
